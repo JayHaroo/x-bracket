@@ -14,9 +14,6 @@ export default function Landing() {
       >
         <Text className="text-white p-3">Create a tournamenr</Text>
       </Pressable>
-      <Pressable className="bg-[#1d54b9] rounded-full px-4 py-2 mt-4">
-        <Text className="text-white p-3">Player Database</Text>
-      </Pressable>
     </View>
   );
 }
