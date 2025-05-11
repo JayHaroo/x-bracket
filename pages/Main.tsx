@@ -34,6 +34,13 @@ export default function Main() {
       <Pressable className="bg-[#1DB954] rounded-full px-4 py-2 mt-4">
         <Text className="text-white">Add a player</Text>
       </Pressable>
+      <Pressable
+        className="bg-[#1DB954] rounded-full px-4 py-2 mt-4"
+        onPress={() => navigation.navigate("Bracket", { players, tournamentName, tournamentType })}
+      >
+        <Text className="text-white">Create Bracket</Text>
+      </Pressable>
+      <Text className="text-white text-lg font-semibold mb-2 mt-4">Players:</Text>
 
       {players.map((player, index) => (
         <View
