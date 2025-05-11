@@ -1,22 +1,20 @@
-import { View, Text, Pressable } from "react-native";
+import { View, Text, Pressable, TextInput, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useState } from "react";
 
 export default function Main() {
   const navigation = useNavigation();
-  const [players, setPlayers] = useState([
-    { name: "Player 1", score: 0 },
-    { name: "Player 2", score: 0 },
-    { name: "Player 3", score: 0 },
-    { name: "Player 4", score: 0 },
-  ]);
-  const [bracket, setBracket] = useState([]);
+  const [players, setPlayers] = useState([ ]);
+  const [newPlayerName, setNewPlayerName] = useState("");
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentType, setTournamentType] = useState("single-elimination");
 
-  const addPlayer = (player) => {
-    setPlayers((prevPlayers) => [...prevPlayers, player]);
+  const addPlayer = () => {
+    const name = newPlayerName.trim() || "Default Player";
+    setPlayers((prevPlayers) => [...prevPlayers, { name, score: 0 }]);
+    setNewPlayerName(""); // Clear input after adding
   };
+
   const removePlayer = (player) => {
     setPlayers((prevPlayers) => prevPlayers.filter((p) => p !== player));
   };
@@ -32,17 +30,33 @@ export default function Main() {
           <Text className="text-white p-1">Back</Text>
         </Pressable>
       </View>
-      <Pressable className="bg-[#1DB954] rounded-full px-4 py-2 mt-4">
-        <Text className="text-white">Add a player</Text>
-      </Pressable>
+
+      {/* Add Player Section */}
+      <View className="mt-4">
+        <TextInput
+          className="bg-[#ffffff] text-[#121212] rounded-full px-4 py-2"
+          placeholder="Enter player's name"
+          value={newPlayerName}
+          onChangeText={setNewPlayerName}
+        />
+        <Pressable
+          className="bg-[#1DB954] rounded-full px-4 py-2 mt-2"
+          onPress={addPlayer}
+        >
+          <Text className="text-white">Add Player</Text>
+        </Pressable>
+      </View>
+
       <Pressable
         className="bg-[#1DB954] rounded-full px-4 py-2 mt-4"
-        onPress={() => navigation.navigate("Bracket", { players: players, tournamentName, tournamentType })}
+        onPress={() =>
+          navigation.navigate("Bracket", { players: players, tournamentName, tournamentType })
+        }
       >
         <Text className="text-white">Create Bracket</Text>
       </Pressable>
-      <Text className="text-white text-lg font-semibold mb-2 mt-4">Players:</Text>
 
+      <Text className="text-white text-lg font-semibold mb-2 mt-4">Players:</Text>
       {players.map((player, index) => (
         <View
           key={index}

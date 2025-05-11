@@ -79,6 +79,18 @@ export default function Bracket() {
       ].push(winner);
     }
 
+    const isLastMatch =
+      currentMatch + 1 === currentMatches.length &&
+      updatedRounds[nextRoundIndex].length === 1 &&
+      updatedRounds[nextRoundIndex][0].length === 1;
+
+    if (isLastMatch) {
+      Alert.alert(
+        "🏆 Tournament Winner!",
+        `${winner.name} has won the tournament!`
+      );
+    }
+
     if (currentMatch + 1 < currentMatches.length) {
       setCurrentMatch((prev) => prev + 1);
     } else {
@@ -113,6 +125,16 @@ export default function Bracket() {
 
   const getCurrentMatch = () => {
     const currentMatches = rounds[currentRound];
+
+    // Tournament finished: only one player remains in the final round
+    if (
+      currentRound === rounds.length - 1 &&
+      rounds[currentRound]?.length === 1 &&
+      rounds[currentRound][0]?.length === 1
+    ) {
+      return null;
+    }
+
     if (!currentMatches || currentMatches.length === 0) return null;
     return currentMatches[currentMatch];
   };
