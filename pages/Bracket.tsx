@@ -36,12 +36,12 @@ export default function Bracket() {
     for (let i = 0; i < shuffledPlayers.length; i += 2) {
       if (i + 1 < shuffledPlayers.length) {
         initialRound.push([
-          { name: shuffledPlayers[i], score: 0 },
-          { name: shuffledPlayers[i + 1], score: 0 },
+          { ...shuffledPlayers[i], score: 0 },
+          { ...shuffledPlayers[i + 1], score: 0 },
         ]);
       } else {
         initialRound.push([
-          { name: shuffledPlayers[i], score: 0 },
+          { ...shuffledPlayers[i], score: 0 },
           { name: "Wildcard (Bye)", score: 0 },
         ]);
       }
@@ -168,19 +168,25 @@ export default function Bracket() {
                     className="bg-[#1DB954] rounded-full px-3 py-2 mx-1"
                     onPress={() => addPoints(player.name, 2)}
                   >
-                    <Text className="text-white text-sm">Pocket/Burst (+2)</Text>
+                    <Text className="text-white text-sm">
+                      Pocket/Burst (+2)
+                    </Text>
                   </Pressable>
                   <Pressable
                     className="bg-[#1DB954] rounded-full px-3 py-2 ml-1"
                     onPress={() => addPoints(player.name, 3)}
                   >
-                    <Text className="text-white text-sm">Extreme Finish (+3)</Text>
+                    <Text className="text-white text-sm">
+                      Extreme Finish (+3)
+                    </Text>
                   </Pressable>
                 </View>
               </View>
             ))}
 
-            <Text className="text-white mt-4 mb-2">Or set winner manually:</Text>
+            <Text className="text-white mt-4 mb-2">
+              Or set winner manually:
+            </Text>
             {getCurrentMatch().map((player, idx) => (
               <Pressable
                 key={idx}
