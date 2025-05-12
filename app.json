@@ -25,6 +25,12 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
-    }
+    },
+    "fonts": [
+      {
+        "asset": "./assets/fonts/Nippo-Variable.ttf",
+        "name": "Nippo"
+      }
+    ]
   }
 }
