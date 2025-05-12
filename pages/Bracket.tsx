@@ -175,11 +175,11 @@ export default function Bracket() {
 
             <Text className="text-white mb-2">Player Scores:</Text>
             {getCurrentMatch().map((player, idx) => (
-              <View key={idx} className="mb-2 bg-gray-700 p-3 rounded-lg">
+              <View key={idx} className="mb-2 bg-gray-700 p-3 rounded-lg object-contain">
                 <Text className="text-white text-lg mb-1">
                   {player.name} - {scores[player.name] || 0} pts
                 </Text>
-                <View className="flex-row justify-between">
+                <View className="flex-row justify-between max-w-fit">
                   <Pressable
                     className="bg-[#1DB954] rounded-full px-3 py-2 mr-1"
                     onPress={() => addPoints(player.name, 1)}

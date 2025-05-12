@@ -24,7 +24,7 @@ export default function Main() {
     const randomWord2 = word2Data[Math.floor(Math.random() * word2Data.length)];
     const word = randomWord1 + " " + randomWord2;
     return setTournamentName(word);
-  }
+  };
 
   const addPlayer = () => {
     const name = newPlayerName.trim() || "Default Player";
@@ -37,10 +37,10 @@ export default function Main() {
   };
 
   const handleCreateBracket = () => {
-    if (players.length === 0) {
+    if (players.length <= 1) {
       Alert.alert(
         "Error",
-        "You must add at least one player to create a bracket."
+        "You must add at least two player to create a bracket."
       );
       return;
     }
@@ -64,9 +64,11 @@ export default function Main() {
           <Text className="text-white p-1">Back</Text>
         </Pressable>
       </View>
-      <Text className="text-white text-lg font-semibold mb-2 mt-4">
-        Tournament Name: {tournamentName}
-      </Text>
+      <View>
+        <Text className="text-white text-lg font-semibold mb-2 mt-4">
+          Tournament Name: {tournamentName}
+        </Text>
+      </View>
       <TextInput
         className="bg-[#ffffff] text-[#121212] w-[150px] rounded-full px-4 py-2"
         placeholder="Enter player's name"
