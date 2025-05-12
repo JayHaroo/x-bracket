@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Alert, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Main() {
   const navigation = useNavigation();
@@ -11,11 +11,36 @@ export default function Main() {
   const [word1Data, setWord1Data] = useState([]);
   const [word2Data, setWord2Data] = useState([]);
 
+  useEffect(() => {
+    const fetchWordData = async () => {
+      try {
+        const response1 = await fetch(
+          "../assets/data/word1.json"
+        );
+        const data1 = await response1.json();
+        setWord1Data(data1);
+
+        const response2 = await fetch(
+          "../assets/data/word2.json"
+        );
+        const data2 = await response2.json();
+        setWord2Data(data2);
+      } catch (error) {
+        console.error("Error fetching word data:", error);
+      }
+    };
+
+    fetchWordData();
+  }, []);
+
   const randomWords = (word1Data, word2Data) => {
     const randomWord1 = word1Data[Math.floor(Math.random() * word1Data.length)];
     const randomWord2 = word2Data[Math.floor(Math.random() * word2Data.length)];
-    return [randomWord1, randomWord2];
+    const word = randomWord1 + " " + randomWord2;
+    return setTournamentName(word);
   }
+
+  randomWords(word1Data, word2Data);
 
   const addPlayer = () => {
     const name = newPlayerName.trim() || "Default Player";
@@ -37,7 +62,7 @@ export default function Main() {
     }
     navigation.navigate("Bracket", {
       players: players,
-      tournamentName,
+      tournamentName: tournamentName,
       tournamentType,
     });
   };
@@ -55,6 +80,9 @@ export default function Main() {
           <Text className="text-white p-1">Back</Text>
         </Pressable>
       </View>
+      <Text className="text-white text-lg font-semibold mb-2 mt-4">
+        Tournament Name: {tournamentName}
+      </Text>
       <TextInput
         className="bg-[#ffffff] text-[#121212] w-[150px] rounded-full px-4 py-2"
         placeholder="Enter player's name"
