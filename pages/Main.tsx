@@ -1,6 +1,8 @@
 import { View, Text, Pressable, Alert, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
+import word1 from "../assets/data/word1.json";
+import word2 from "../assets/data/word2.json";
 
 export default function Main() {
   const navigation = useNavigation();
@@ -12,25 +14,9 @@ export default function Main() {
   const [word2Data, setWord2Data] = useState([]);
 
   useEffect(() => {
-    const fetchWordData = async () => {
-      try {
-        const response1 = await fetch(
-          "../assets/data/word1.json"
-        );
-        const data1 = await response1.json();
-        setWord1Data(data1);
-
-        const response2 = await fetch(
-          "../assets/data/word2.json"
-        );
-        const data2 = await response2.json();
-        setWord2Data(data2);
-      } catch (error) {
-        console.error("Error fetching word data:", error);
-      }
-    };
-
-    fetchWordData();
+    setWord1Data(word1);
+    setWord2Data(word2);
+    randomWords(word1, word2); // Call after setting
   }, []);
 
   const randomWords = (word1Data, word2Data) => {
@@ -39,8 +25,6 @@ export default function Main() {
     const word = randomWord1 + " " + randomWord2;
     return setTournamentName(word);
   }
-
-  randomWords(word1Data, word2Data);
 
   const addPlayer = () => {
     const name = newPlayerName.trim() || "Default Player";
