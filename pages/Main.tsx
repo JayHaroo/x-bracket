@@ -8,6 +8,14 @@ export default function Main() {
   const [newPlayerName, setNewPlayerName] = useState("");
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentType, setTournamentType] = useState("single-elimination");
+  const [word1Data, setWord1Data] = useState([]);
+  const [word2Data, setWord2Data] = useState([]);
+
+  const randomWords = (word1Data, word2Data) => {
+    const randomWord1 = word1Data[Math.floor(Math.random() * word1Data.length)];
+    const randomWord2 = word2Data[Math.floor(Math.random() * word2Data.length)];
+    return [randomWord1, randomWord2];
+  }
 
   const addPlayer = () => {
     const name = newPlayerName.trim() || "Default Player";
