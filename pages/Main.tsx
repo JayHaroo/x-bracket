@@ -55,7 +55,7 @@ export default function Main() {
     <View className="flex-1 items-center justify-center bg-[#121212]">
       <View className="items-center">
         <View className="flex-row items-center justify-between bg-[#121212]">
-          <Text className="text-3xl font-Oxanium text-white mt-4 mr-3">
+          <Text className="text-2xl font-Oxanium text-white mt-4 mr-3">
             Set tournament details
           </Text>
           <Pressable
