@@ -16,7 +16,6 @@ export default function App() {
     });
   
     if (!fontsLoaded) {
-      alert("Fonts are loading...");
       return null;
     }
     

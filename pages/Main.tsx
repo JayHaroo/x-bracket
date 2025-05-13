@@ -1,4 +1,4 @@
-import { View, Text, Pressable, Alert, TextInput } from "react-native";
+import { View, ScrollView, Text, Pressable, Alert, TextInput } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import word1 from "../assets/data/word1.json";
@@ -77,6 +77,7 @@ export default function Main() {
         <TextInput
           className="bg-[#ffffff] text-[#121212] w-[150px] h-[50px] rounded-full px-4 py-2"
           placeholder="Enter player's name"
+          placeholderClassName="text-[#121212]"
           value={newPlayerName}
           onChangeText={setNewPlayerName}
         />
@@ -97,6 +98,7 @@ export default function Main() {
       <Text className="text-white text-3xl font-ShareTech mb-2 mt-4">
         Players:
       </Text>
+      <ScrollView className="w-10/12 max-h-[300px]">
       {players.map((player, index) => (
         <View
           key={index}
@@ -111,6 +113,7 @@ export default function Main() {
           </Pressable>
         </View>
       ))}
+      </ScrollView>
     </View>
   );
 }
