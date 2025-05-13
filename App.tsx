@@ -16,8 +16,10 @@ export default function App() {
     });
   
     if (!fontsLoaded) {
-      return <AppLoading />;
+      alert("Fonts are loading...");
+      return null;
     }
+    
   return (
     <NavigationContainer>
       <Stack.Navigator
