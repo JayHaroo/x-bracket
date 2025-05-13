@@ -6,7 +6,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        "nippo": ["Nippo", "sans-serif"],
+        'ShareTech': ['ShareTech'],
+        'Nippo': ['Nippo'],
       },
     },
   },
