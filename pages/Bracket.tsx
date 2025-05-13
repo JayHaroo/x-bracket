@@ -141,19 +141,19 @@ export default function Bracket() {
 
   return (
     <ScrollView className="flex-1 bg-[#121212] px-4 py-6">
-      <Text className="text-white text-3xl font-bold mb-4 text-center">
+      <Text className="text-white font-Nippo text-3xl mb-4 text-center">
         {tournamentName || "Tournament Bracket"}
       </Text>
 
       {rounds.map((round, roundIndex) => (
         <View key={roundIndex} className="mb-6">
-          <Text className="text-white text-xl font-semibold mb-2">
+          <Text className="text-white text-xl font-semibold font-ShareTech mb-2">
             Round {roundIndex + 1}
           </Text>
           {round.map((match, matchIndex) => (
             <View
               key={matchIndex}
-              className="flex-row justify-between items-center bg-gray-800 rounded-lg p-3 mb-2"
+              className="flex-row justify-between items-center border-2 border-gray-800 rounded-lg p-3 mb-2"
             >
               <Text className="text-white">{match[0]?.name}</Text>
               <Text className="text-white">vs</Text>
@@ -166,14 +166,14 @@ export default function Bracket() {
       <View className="mt-6">
         {getCurrentMatch() && (
           <>
-            <Text className="text-white text-xl mb-2">Current Match</Text>
-            <View className="flex-row justify-between bg-[#1DB954] p-3 rounded-lg mb-4">
+            <Text className="text-white text-xl mb-2 font-ShareTech">Current Match</Text>
+            <View className="flex-row justify-between border-2 border-[#1DB954] p-3 rounded-lg mb-4">
               <Text className="text-white">{getCurrentMatch()[0].name}</Text>
               <Text className="text-white">vs</Text>
               <Text className="text-white">{getCurrentMatch()[1].name}</Text>
             </View>
 
-            <Text className="text-white mb-2">Player Scores:</Text>
+            <Text className="text-white mb-2 font-ShareTech">Player Scores:</Text>
             {getCurrentMatch().map((player, idx) => (
               <View key={idx} className="mb-2 bg-gray-700 p-3 rounded-lg object-contain">
                 <Text className="text-white text-lg mb-1">
@@ -212,7 +212,7 @@ export default function Bracket() {
             {getCurrentMatch().map((player, idx) => (
               <Pressable
                 key={idx}
-                className="bg-[#ce3636] rounded-full px-4 py-2 my-1"
+                className="border-2 border-[#ce3636] rounded-full px-4 py-2 my-1"
                 onPress={() => playMatch(player)}
               >
                 <Text className="text-white text-center">
@@ -234,7 +234,7 @@ export default function Bracket() {
       </View>
 
       <View className="mt-10">
-        <Text className="text-white text-lg font-semibold mb-2">
+        <Text className="text-white font-ShareTech text-lg font-semibold mb-2">
           Match History
         </Text>
         {matchHistory.map((match, idx) => (

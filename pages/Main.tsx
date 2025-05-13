@@ -53,46 +53,48 @@ export default function Main() {
 
   return (
     <View className="flex-1 items-center justify-center bg-[#121212]">
-      <View className="flex-row items-center justify-center bg-[#121212]">
-        <Text className="text-2xl font-bold text-white mt-4 mr-3">
-          Set tournament details
-        </Text>
-        <Pressable
-          className="bg-[#ce3636] rounded-full px-4 py-2 mt-4"
-          onPress={navigation.goBack}
-        >
-          <Text className="text-white p-1">Back</Text>
-        </Pressable>
+      <View className="items-center mt-[-400px]">
+        <View className="flex-row items-center justify-between bg-[#121212]">
+          <Text className="text-4xl font-ShareTech text-white mt-4 mr-3">
+            Set tournament details
+          </Text>
+          <Pressable
+            className="bg-[#ce3636] rounded-full px-4 py-2 mt-4"
+            onPress={navigation.goBack}
+          >
+            <Text className="text-white p-1">Back</Text>
+          </Pressable>
+        </View>
+        <View>
+          <Text className="text-white text-3xl font-ShareTech font-semibold mb-2 mt-4">
+            Tournament Name: {tournamentName}
+          </Text>
+        </View>
       </View>
-      <View>
-        <Text className="text-white text-lg font-semibold mb-2 mt-4">
-          Tournament Name: {tournamentName}
-        </Text>
-      </View>
-      <TextInput
-        className="bg-[#ffffff] text-[#121212] w-[150px] rounded-full px-4 py-2"
-        placeholder="Enter player's name"
-        value={newPlayerName}
-        onChangeText={setNewPlayerName}
-      />
 
       {/* Add Player Section */}
-      <View className="mt-4">
+      <View className="mt-4 items-center">
+        <TextInput
+          className="bg-[#ffffff] text-[#121212] w-[150px] h-[50px] rounded-full px-4 py-2"
+          placeholder="Enter player's name"
+          value={newPlayerName}
+          onChangeText={setNewPlayerName}
+        />
         <Pressable
-          className="bg-[#1DB954] rounded-full items-center px-4 py-2 mt-2"
+          className="border-2 border-[#09ff53] rounded-full items-center px-4 py-2 mt-2"
           onPress={addPlayer}
         >
           <Text className="text-white">Add Player</Text>
         </Pressable>
         <Pressable
-          className="bg-[#1DB954] rounded-full px-4 py-2 mt-4"
+          className="border-2 border-[#09ff53] rounded-full px-4 py-2 mt-4"
           onPress={handleCreateBracket}
         >
           <Text className="text-white">Create Bracket</Text>
         </Pressable>
       </View>
 
-      <Text className="text-white text-lg font-semibold mb-2 mt-4">
+      <Text className="text-white text-3xl font-ShareTech mb-2 mt-4">
         Players:
       </Text>
       {players.map((player, index) => (
@@ -102,7 +104,7 @@ export default function Main() {
         >
           <Text className="text-white mr-3">{player.name}</Text>
           <Pressable
-            className="bg-[#ce3636] rounded-full p-1"
+            className="border-2 border-[#ce3636] rounded-full p-1"
             onPress={() => removePlayer(player)}
           >
             <Text className="text-white p-1">Remove</Text>
