@@ -141,7 +141,7 @@ export default function Bracket() {
 
   return (
     <ScrollView className="flex-1 bg-[#121212] px-4 py-6">
-      <Text className="text-white font-Nippo text-3xl mb-4 text-center">
+      <Text className="text-white font-Oxanium text-3xl mb-4 text-center">
         {tournamentName || "Tournament Bracket"}
       </Text>
 

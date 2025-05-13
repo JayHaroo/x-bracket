@@ -8,6 +8,7 @@ module.exports = {
       fontFamily: {
         'ShareTech': ['ShareTech'],
         'Nippo': ['Nippo'],
+        'Oxanium': ['Oxanium'],
       },
     },
   },

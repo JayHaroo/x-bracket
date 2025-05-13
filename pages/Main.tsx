@@ -53,9 +53,9 @@ export default function Main() {
 
   return (
     <View className="flex-1 items-center justify-center bg-[#121212]">
-      <View className="items-center mt-[-400px]">
+      <View className="items-center">
         <View className="flex-row items-center justify-between bg-[#121212]">
-          <Text className="text-4xl font-ShareTech text-white mt-4 mr-3">
+          <Text className="text-3xl font-Oxanium text-white mt-4 mr-3">
             Set tournament details
           </Text>
           <Pressable
@@ -66,7 +66,7 @@ export default function Main() {
           </Pressable>
         </View>
         <View>
-          <Text className="text-white text-3xl font-ShareTech font-semibold mb-2 mt-4">
+          <Text className="text-white text-2xl font-ShareTech font-semibold mb-2 mt-4">
             Tournament Name: {tournamentName}
           </Text>
         </View>

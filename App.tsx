@@ -11,7 +11,8 @@ const Stack = createNativeStackNavigator();
 export default function App() {
     const [fontsLoaded] = useFonts({
       ShareTech: require("./assets/fonts/ShareTech-Regular.ttf"),
-      Nippo: require("./assets/fonts/Nippo-Variable.ttf")
+      Nippo: require("./assets/fonts/Nippo-Variable.ttf"),
+      Oxanium: require("./assets/fonts/Oxanium-Regular.ttf"),
     });
   
     if (!fontsLoaded) {
