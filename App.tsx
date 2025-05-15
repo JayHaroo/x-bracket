@@ -5,6 +5,7 @@ import { useFonts } from "expo-font";
 import Landing from "./pages/Landing";
 import Main from "./pages/Main";
 import Bracket from "./pages/Bracket";
+import SwiissBracket from "./pages/Swiss";
 
 const Stack = createNativeStackNavigator();
 
@@ -28,6 +29,7 @@ export default function App() {
         <Stack.Screen name="Landing" component={Landing} />
         <Stack.Screen name="Main" component={Main} />
         <Stack.Screen name="Bracket" component={Bracket} />
+        <Stack.Screen name="Swiss" component={SwiissBracket} />
       </Stack.Navigator>
     </NavigationContainer>
   );

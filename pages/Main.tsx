@@ -91,6 +91,21 @@ export default function Main() {
     });
   };
 
+  const handleSwissMode = () => {
+    if (players.length <= 1) {
+      Alert.alert(
+        "Error",
+        "You must add at least two player to create a bracket."
+      );
+      return;
+    }
+    navigation.navigate("Swiss", {
+      players: players,
+      tournamentName: tournamentName,
+      tournamentType,
+    });
+  }
+
   return (
     <View className="flex-1 items-center justify-center bg-[#121212]">
       <View className="items-center">
@@ -132,6 +147,12 @@ export default function Main() {
           onPress={handleCreateBracket}
         >
           <Text className="text-white">Create Bracket</Text>
+        </Pressable>
+        <Pressable
+          className="border-2 border-[#09ff53] rounded-full px-4 py-2 mt-4"
+          onPress={handleSwissMode}
+        >
+          <Text className="text-white">Swiss Mode</Text>
         </Pressable>
       </View>
 
