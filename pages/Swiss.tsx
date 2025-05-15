@@ -20,6 +20,7 @@ export default function SwissBracket() {
   const [pairings, setPairings] = useState([]);
   const [matchResults, setMatchResults] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [matchesCompleted, setMatchesCompleted] = useState(0);
 
   useEffect(() => {
     loadTournament();
@@ -63,7 +64,11 @@ export default function SwissBracket() {
       if (used.has(i)) continue;
 
       for (let j = i + 1; j < sorted.length; j++) {
-        if (!used.has(j) && !sorted[i].history.includes(sorted[j].name)) {
+        if (
+          !used.has(j) &&
+          sorted[i].score === sorted[j].score &&
+          !sorted[i].history.includes(sorted[j].name)
+        ) {
           newPairs.push([sorted[i], sorted[j]]);
           used.add(i);
           used.add(j);
@@ -102,23 +107,28 @@ export default function SwissBracket() {
       { round, winner: winnerName, loser: loserName },
     ];
 
-    const totalRounds = Math.ceil(Math.log2(players.length)) + 1;
-
-    if (round >= totalRounds) {
-      const champ = updated.reduce((a, b) => (a.score > b.score ? a : b));
-      Alert.alert("🏆 Swiss Champion!", `${champ.name} wins with ${champ.score} points`, [
-        {
-          text: "OK",
-          onPress: () => resetTournament(),
-        },
-      ]);
-      return;
-    }
-
-    setRound((prev) => prev + 1);
     setPlayers(updated);
     setMatchResults(updatedResults);
-    generatePairings(updated);
+    setMatchesCompleted((prev) => prev + 1);
+
+    const totalMatchesThisRound = pairings.length;
+
+    if (matchesCompleted + 1 === totalMatchesThisRound) {
+      const totalRounds = Math.ceil(Math.log2(initialPlayers.length));
+      if (round >= totalRounds) {
+        const champ = updated.reduce((a, b) => (a.score > b.score ? a : b));
+        Alert.alert(
+          "🏆 Swiss Champion!",
+          `${champ.name} wins with ${champ.score} points`,
+          [{ text: "OK", onPress: () => resetTournament() }]
+        );
+      } else {
+        const nextRound = round + 1;
+        setRound(nextRound);
+        setMatchesCompleted(0);
+        generatePairings(updated);
+      }
+    }
   };
 
   const resetTournament = async () => {
@@ -137,6 +147,15 @@ export default function SwissBracket() {
       </View>
     );
   }
+
+  const isMatchDecided = (player1, player2) => {
+    return matchResults.some(
+      (result) =>
+        result.round === round &&
+        ((result.winner === player1.name && result.loser === player2.name) ||
+          (result.winner === player2.name && result.loser === player1.name))
+    );
+  };
 
   return (
     <ScrollView className="flex-1 bg-[#121212] px-4 py-6">
@@ -158,7 +177,12 @@ export default function SwissBracket() {
 
           <View className="flex-row justify-around mt-2">
             <Pressable
-              className="bg-[#1DB954] px-4 py-2 rounded-full"
+              disabled={isMatchDecided(match[0], match[1])}
+              className={`px-4 py-2 rounded-full ${
+                isMatchDecided(match[0], match[1])
+                  ? "bg-gray-600"
+                  : "bg-[#1DB954]"
+              }`}
               onPress={() => handleMatchResult(match[0].name, match[1].name)}
             >
               <Text className="text-white">Winner: {match[0].name}</Text>
@@ -166,7 +190,12 @@ export default function SwissBracket() {
 
             {match[1].name !== "Bye" && (
               <Pressable
-                className="bg-[#1DB954] px-4 py-2 rounded-full"
+                disabled={isMatchDecided(match[0], match[1])}
+                className={`px-4 py-2 rounded-full ${
+                  isMatchDecided(match[0], match[1])
+                    ? "bg-gray-600"
+                    : "bg-[#1DB954]"
+                }`}
                 onPress={() => handleMatchResult(match[1].name, match[0].name)}
               >
                 <Text className="text-white">Winner: {match[1].name}</Text>
@@ -175,18 +204,6 @@ export default function SwissBracket() {
           </View>
         </View>
       ))}
-
-      <Text className="text-white text-xl font-semibold mt-6 mb-2 font-ShareTech">
-        Standings
-      </Text>
-      {players
-        .sort((a, b) => b.score - a.score)
-        .map((player, idx) => (
-          <Text key={idx} className="text-white text-lg mb-1">
-            {player.name} - {player.score} pts
-          </Text>
-        ))}
-
       <Pressable
         className="bg-[#ce3636] px-4 py-2 rounded-full mt-8 mb-6"
         onPress={() =>
@@ -196,8 +213,22 @@ export default function SwissBracket() {
           ])
         }
       >
-        <Text className="text-white text-center font-semibold">Reset Tournament</Text>
+        <Text className="text-white text-center font-semibold">
+          Reset Tournament
+        </Text>
       </Pressable>
+      <Text className="text-white text-xl font-semibold mt-6 mb-2 font-ShareTech">
+        Standings
+      </Text>
+      <ScrollView>
+        {players
+          .sort((a, b) => b.score - a.score)
+          .map((player, idx) => (
+            <Text key={idx} className="text-white text-lg mb-1">
+              {player.name} - {player.score} pts
+            </Text>
+          ))}
+      </ScrollView>
     </ScrollView>
   );
 }
