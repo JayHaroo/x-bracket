@@ -1,4 +1,11 @@
-import { View, ScrollView, Text, Pressable, Alert, TextInput } from "react-native";
+import {
+  View,
+  ScrollView,
+  Text,
+  Pressable,
+  Alert,
+  TextInput,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useEffect, useState } from "react";
 import word1 from "../assets/data/word1.json";
@@ -17,7 +24,40 @@ export default function Main() {
     setWord1Data(word1);
     setWord2Data(word2);
     randomWords(word1, word2); // Call after setting
+    checkSavedTournament(); // <-- Add this
   }, []);
+
+  const checkSavedTournament = async () => {
+    try {
+      const saved = await AsyncStorage.getItem("lastTournament");
+      if (saved) {
+        Alert.alert(
+          "Resume Tournament",
+          "A completed tournament was found. Would you like to view it?",
+          [
+            {
+              text: "Yes",
+              onPress: () => {
+                const parsed = JSON.parse(saved);
+                navigation.navigate("Bracket", {
+                  players: parsed.rounds[0].flat(), // flattened for compatibility
+                  tournamentName: parsed.tournamentName,
+                  tournamentType: parsed.tournamentType,
+                  resume: true,
+                });
+              },
+            },
+            {
+              text: "No",
+              style: "cancel",
+            },
+          ]
+        );
+      }
+    } catch (err) {
+      console.error("Error checking saved tournament:", err);
+    }
+  };
 
   const randomWords = (word1Data, word2Data) => {
     const randomWord1 = word1Data[Math.floor(Math.random() * word1Data.length)];
@@ -99,20 +139,20 @@ export default function Main() {
         Players:
       </Text>
       <ScrollView className="w-10/12 max-h-[300px]">
-      {players.map((player, index) => (
-        <View
-          key={index}
-          className="flex-row items-center justify-between rounded-full px-4 py-2 mt-4"
-        >
-          <Text className="text-white mr-3">{player.name}</Text>
-          <Pressable
-            className="border-2 border-[#ce3636] rounded-full p-1"
-            onPress={() => removePlayer(player)}
+        {players.map((player, index) => (
+          <View
+            key={index}
+            className="flex-row items-center justify-between rounded-full px-4 py-2 mt-4"
           >
-            <Text className="text-white p-1">Remove</Text>
-          </Pressable>
-        </View>
-      ))}
+            <Text className="text-white mr-3">{player.name}</Text>
+            <Pressable
+              className="border-2 border-[#ce3636] rounded-full p-1"
+              onPress={() => removePlayer(player)}
+            >
+              <Text className="text-white p-1">Remove</Text>
+            </Pressable>
+          </View>
+        ))}
       </ScrollView>
     </View>
   );

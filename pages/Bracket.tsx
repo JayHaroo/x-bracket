@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Bracket() {
   const route = useRoute();
@@ -13,14 +14,48 @@ export default function Bracket() {
   const [scores, setScores] = useState({});
 
   useEffect(() => {
-    if (players.length < 2) {
-      alert("At least 2 players are required to create a bracket.");
-    } else {
-      generateBracket();
-    }
+    const loadState = async () => {
+      const saved = await AsyncStorage.getItem("lastTournament");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setRounds(parsed.rounds || []);
+        setCurrentRound(parsed.currentRound || 0);
+        setCurrentMatch(parsed.currentMatch || 0);
+        setMatchHistory(parsed.matchHistory || []);
+        setScores(parsed.scores || {});
+      } else {
+        if (players.length < 2) {
+          alert("At least 2 players are required to create a bracket.");
+        } else {
+          generateBracket();
+        }
+      }
+    };
+
+    loadState();
   }, [players]);
 
-  const shuffle = (array: any) => {
+  const saveState = async (data = {}) => {
+    try {
+      await AsyncStorage.setItem(
+        "lastTournament",
+        JSON.stringify({
+          tournamentName,
+          tournamentType,
+          rounds,
+          currentRound,
+          currentMatch,
+          matchHistory,
+          scores,
+          ...data,
+        })
+      );
+    } catch (err) {
+      console.error("Failed to save bracket state:", err);
+    }
+  };
+
+  const shuffle = (array) => {
     let copy = [...array];
     for (let i = copy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -47,21 +82,30 @@ export default function Bracket() {
       }
     }
 
-    setRounds([initialRound]);
+    const initialRounds = [initialRound];
+    setRounds(initialRounds);
     setCurrentRound(0);
     setCurrentMatch(0);
     setScores({});
+
+    saveState({
+      rounds: initialRounds,
+      currentRound: 0,
+      currentMatch: 0,
+      matchHistory: [],
+      scores: {},
+    });
   };
 
-  const playMatch = (winner: any) => {
-    setMatchHistory((prev) => [
-      ...prev,
+  const playMatch = async (winner) => {
+    const updatedMatchHistory = [
+      ...matchHistory,
       {
         round: currentRound + 1,
         match: currentMatch + 1,
         winner,
       },
-    ]);
+    ];
 
     const updatedRounds = [...rounds];
     const nextRoundIndex = currentRound + 1;
@@ -89,44 +133,66 @@ export default function Bracket() {
         "🏆 Tournament Winner!",
         `${winner.name} has won the tournament!`
       );
+
+      // Clear saved bracket
+      try {
+        await AsyncStorage.removeItem("lastTournament");
+        console.log("Bracket data cleared after tournament.");
+      } catch (error) {
+        console.error("Failed to clear bracket:", error);
+      }
     }
 
-    if (currentMatch + 1 < currentMatches.length) {
-      setCurrentMatch((prev) => prev + 1);
-    } else {
-      setCurrentRound((prev) => prev + 1);
-      setCurrentMatch(0);
-    }
+    const newRound =
+      currentMatch + 1 < currentMatches.length
+        ? currentRound
+        : currentRound + 1;
+    const newMatch =
+      currentMatch + 1 < currentMatches.length ? currentMatch + 1 : 0;
 
-    setScores({});
+    setMatchHistory(updatedMatchHistory);
     setRounds(updatedRounds);
+    setCurrentRound(newRound);
+    setCurrentMatch(newMatch);
+    setScores({});
+
+    await saveState({
+      rounds: updatedRounds,
+      currentRound: newRound,
+      currentMatch: newMatch,
+      matchHistory: updatedMatchHistory,
+      scores: {},
+    });
   };
 
-  const addPoints = (playerName: string, points: number) => {
+  const addPoints = (playerName, points) => {
     setScores((prev) => {
       const newScore = (prev[playerName] || 0) + points;
 
-      if (newScore >= 5) {
-        const current = getCurrentMatch();
-        const winner = current?.find((p) => p.name === playerName);
-        if (winner) {
-          Alert.alert("Match Finished", `${playerName} reached 5 points!`, [
-            {
-              text: "OK",
-              onPress: () => playMatch(winner),
-            },
-          ]);
-        }
+      const current = getCurrentMatch();
+      const winner = current?.find((p) => p.name === playerName);
+
+      const updated = { ...prev, [playerName]: newScore };
+
+      saveState({ scores: updated }); // Save scores update
+
+      if (newScore >= 5 && winner) {
+        Alert.alert("Match Finished", `${playerName} reached 5 points!`, [
+          {
+            text: "OK",
+            onPress: () => playMatch(winner),
+          },
+        ]);
       }
 
-      return { ...prev, [playerName]: newScore };
+      return updated;
     });
   };
 
   const getCurrentMatch = () => {
     const currentMatches = rounds[currentRound];
+    if (!currentMatches || currentMatches.length === 0) return null;
 
-    // Tournament finished: only one player remains in the final round
     if (
       currentRound === rounds.length - 1 &&
       rounds[currentRound]?.length === 1 &&
@@ -135,15 +201,25 @@ export default function Bracket() {
       return null;
     }
 
-    if (!currentMatches || currentMatches.length === 0) return null;
     return currentMatches[currentMatch];
   };
 
   return (
     <ScrollView className="flex-1 bg-[#121212] px-4 py-6">
-      <Text className="text-white font-Oxanium text-3xl mb-4 mt-7 text-center">
-        {tournamentName || "Tournament Bracket"}
-      </Text>
+      <View className="flex-row justify-between items-center mb-4">
+        <Text className="text-white font-Oxanium text-3xl mb-4 mt-7 text-center">
+          {tournamentName || "Tournament Bracket"}
+        </Text>
+        <Pressable
+          className="bg-red-600 rounded-full px-4 py-2 mt-4"
+          onPress={async () => {
+            await AsyncStorage.removeItem("lastTournament");
+            generateBracket(); // or navigate back
+          }}
+        >
+          <Text className="text-white">Reset Tournament</Text>
+        </Pressable>
+      </View>
 
       {rounds.map((round, roundIndex) => (
         <View key={roundIndex} className="mb-6">
@@ -166,43 +242,52 @@ export default function Bracket() {
       <View className="mt-6">
         {getCurrentMatch() && (
           <>
-            <Text className="text-white text-xl mb-2 font-ShareTech">Current Match</Text>
+            <Text className="text-white text-xl mb-2 font-ShareTech">
+              Current Match
+            </Text>
             <View className="flex-row justify-between border-2 border-[#1DB954] p-3 rounded-lg mb-4">
               <Text className="text-white">{getCurrentMatch()[0].name}</Text>
               <Text className="text-white">vs</Text>
               <Text className="text-white">{getCurrentMatch()[1].name}</Text>
             </View>
 
-            <Text className="text-white mb-2 font-ShareTech">Player Scores:</Text>
+            <Text className="text-white mb-2 font-ShareTech">
+              Player Scores:
+            </Text>
             {getCurrentMatch().map((player, idx) => (
-              <View key={idx} className="mb-2 bg-gray-700 p-3 rounded-lg object-contain">
+              <View
+                key={idx}
+                className="mb-2 bg-gray-700 p-3 rounded-lg object-contain"
+              >
                 <Text className="text-white text-lg mb-1">
                   {player.name} - {scores[player.name] || 0} pts
                 </Text>
                 <View className="flex-row justify-between">
                   <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <Pressable
-                    className="bg-[#1DB954] rounded-full px-3 py-2 mr-1"
-                    onPress={() => addPoints(player.name, 1)}
-                  >
-                    <Text className="text-white text-sm">Spin Finish (+1)</Text>
-                  </Pressable>
-                  <Pressable
-                    className="bg-[#1DB954] rounded-full px-3 py-2 mx-1"
-                    onPress={() => addPoints(player.name, 2)}
-                  >
-                    <Text className="text-white text-sm">
-                      Pocket/Burst (+2)
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    className="bg-[#1DB954] rounded-full px-3 py-2 ml-1"
-                    onPress={() => addPoints(player.name, 3)}
-                  >
-                    <Text className="text-white text-sm">
-                      Extreme Finish (+3)
-                    </Text>
-                  </Pressable>
+                    <Pressable
+                      className="bg-[#1DB954] rounded-full px-3 py-2 mr-1"
+                      onPress={() => addPoints(player.name, 1)}
+                    >
+                      <Text className="text-white text-sm">
+                        Spin Finish (+1)
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      className="bg-[#1DB954] rounded-full px-3 py-2 mx-1"
+                      onPress={() => addPoints(player.name, 2)}
+                    >
+                      <Text className="text-white text-sm">
+                        Pocket/Burst (+2)
+                      </Text>
+                    </Pressable>
+                    <Pressable
+                      className="bg-[#1DB954] rounded-full px-3 py-2 ml-1"
+                      onPress={() => addPoints(player.name, 3)}
+                    >
+                      <Text className="text-white text-sm">
+                        Extreme Finish (+3)
+                      </Text>
+                    </Pressable>
                   </ScrollView>
                 </View>
               </View>
