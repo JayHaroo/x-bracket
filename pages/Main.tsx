@@ -24,7 +24,6 @@ export default function Main() {
     setWord1Data(word1);
     setWord2Data(word2);
     randomWords(word1, word2); // Call after setting
-    checkSavedTournament(); // <-- Add this
   }, []);
 
   const checkSavedTournament = async () => {
@@ -72,8 +71,15 @@ export default function Main() {
     setNewPlayerName(""); // Clear input after adding
   };
 
-  const removePlayer = (player) => {
-    setPlayers((prevPlayers) => prevPlayers.filter((p) => p !== player));
+  const removePlayer = (indexToRemove) => {
+    console.log("Removing player at index:", indexToRemove);
+    setPlayers((prevPlayers) => {
+      const newPlayers = prevPlayers.filter(
+        (_, index) => index !== indexToRemove
+      );
+      console.log("New players list:", newPlayers);
+      return newPlayers;
+    });
   };
 
   const handleCreateBracket = () => {
@@ -104,7 +110,7 @@ export default function Main() {
       tournamentName: tournamentName,
       tournamentType,
     });
-  }
+  };
 
   return (
     <View className="flex-1 items-center justify-center bg-[#121212]">
@@ -162,13 +168,13 @@ export default function Main() {
       <ScrollView className="w-10/12 max-h-[300px]">
         {players.map((player, index) => (
           <View
-            key={index}
+            key={`${player.name}-${index}`}
             className="flex-row items-center justify-between rounded-full px-4 py-2 mt-4"
           >
             <Text className="text-white mr-3">{player.name}</Text>
             <Pressable
               className="border-2 border-[#ce3636] rounded-full p-1"
-              onPress={() => removePlayer(player)}
+              onPress={() => removePlayer(index)}
             >
               <Text className="text-white p-1">Remove</Text>
             </Pressable>
