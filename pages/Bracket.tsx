@@ -215,13 +215,13 @@ export default function Bracket() {
           {tournamentName || "Tournament Bracket"}
         </Text>
         <Pressable
-          className="bg-red-600 rounded-full px-4 py-2"
+        className="bg-red-600 rounded-full px-4 py-2 mt-4"
           onPress={async () => {
             await AsyncStorage.removeItem("lastTournament");
             generateBracket(); // or navigate back
           }}
         >
-          <Text className="text-white">Reset Tournament</Text>
+          <Text className="text-white">Reset</Text>
         </Pressable>
       </View>
 
