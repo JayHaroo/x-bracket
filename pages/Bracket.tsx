@@ -140,6 +140,7 @@ export default function Bracket() {
       try {
         await AsyncStorage.removeItem("lastTournament");
         console.log("Bracket data cleared after tournament.");
+        navigation.goBack();
 
       } catch (error) {
         console.error("Failed to clear bracket:", error);
