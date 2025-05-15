@@ -2,8 +2,10 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useNavigation } from "@react-navigation/native";
 
 export default function Bracket() {
+  const navigation = useNavigation();
   const route = useRoute();
   const { players, tournamentName, tournamentType } = route.params;
 
@@ -138,6 +140,7 @@ export default function Bracket() {
       try {
         await AsyncStorage.removeItem("lastTournament");
         console.log("Bracket data cleared after tournament.");
+
       } catch (error) {
         console.error("Failed to clear bracket:", error);
       }
@@ -211,7 +214,7 @@ export default function Bracket() {
           {tournamentName || "Tournament Bracket"}
         </Text>
         <Pressable
-          className="bg-red-600 rounded-full px-4 py-2 mt-4"
+          className="bg-red-600 rounded-full px-4 py-2"
           onPress={async () => {
             await AsyncStorage.removeItem("lastTournament");
             generateBracket(); // or navigate back
