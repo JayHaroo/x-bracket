@@ -36,13 +36,13 @@ export default function SwissBracket() {
         setMatchResults(data.matchResults);
         setPairings(data.pairings);
       } else {
-        const formattedPlayers = initialPlayers.map((p) => ({
+        const formatted = initialPlayers.map((p) => ({
           name: p.name,
           score: 0,
           history: [],
         }));
-        setPlayers(formattedPlayers);
-        generatePairings(formattedPlayers);
+        setPlayers(formatted);
+        generatePairings(formatted);
       }
     } catch (e) {
       console.error("Failed to load tournament", e);
@@ -59,27 +59,27 @@ export default function SwissBracket() {
     }
   };
 
-  const generatePairings = (playerList) => {
-    const sortedPlayers = [...playerList].sort((a, b) => b.score - a.score);
+  const generatePairings = (list) => {
+    const sorted = [...list].sort((a, b) => b.score - a.score);
     const newPairings = [];
-    const usedIndexes = new Set();
+    const used = new Set();
 
-    for (let i = 0; i < sortedPlayers.length; i++) {
-      if (usedIndexes.has(i)) continue;
+    for (let i = 0; i < sorted.length; i++) {
+      if (used.has(i)) continue;
 
-      const current = sortedPlayers[i];
-
+      const current = sorted[i];
       let paired = false;
-      for (let j = i + 1; j < sortedPlayers.length; j++) {
-        const opponent = sortedPlayers[j];
+
+      for (let j = i + 1; j < sorted.length; j++) {
+        const opponent = sorted[j];
         if (
-          !usedIndexes.has(j) &&
+          !used.has(j) &&
           current.score === opponent.score &&
           !current.history.includes(opponent.name)
         ) {
           newPairings.push([current, opponent]);
-          usedIndexes.add(i);
-          usedIndexes.add(j);
+          used.add(i);
+          used.add(j);
           paired = true;
           break;
         }
@@ -87,16 +87,16 @@ export default function SwissBracket() {
 
       if (!paired) {
         newPairings.push([current, { name: "Bye", score: 0 }]);
-        usedIndexes.add(i);
+        used.add(i);
       }
     }
 
     setPairings(newPairings);
-    saveTournament({ players: playerList, round, matchResults, pairings: newPairings });
+    saveTournament({ players: list, round, matchResults, pairings: newPairings });
   };
 
   const handleMatchResult = (winnerName, loserName) => {
-    const updatedPlayers = players.map((p) => {
+    const updated = players.map((p) => {
       if (p.name === winnerName) {
         return { ...p, score: p.score + 1, history: [...p.history, loserName] };
       }
@@ -111,39 +111,35 @@ export default function SwissBracket() {
       { round, winner: winnerName, loser: loserName },
     ];
 
-    const totalMatchesThisRound = pairings.length;
+    const totalMatches = pairings.length;
 
-    setPlayers(updatedPlayers);
+    setPlayers(updated);
     setMatchResults(updatedResults);
     setMatchesCompleted((prev) => prev + 1);
 
-    if (matchesCompleted + 1 === totalMatchesThisRound) {
+    if (matchesCompleted + 1 === totalMatches) {
       const totalRounds = Math.ceil(Math.log2(initialPlayers.length));
 
       if (round >= totalRounds) {
-        const champion = updatedPlayers.reduce((a, b) =>
-          a.score > b.score ? a : b
-        );
-        Alert.alert(
-          "🏆 Swiss Champion!",
-          `${champion.name} wins with ${champion.score} points`,
-          [{ text: "OK", onPress: resetTournament }]
-        );
+        const champion = updated.reduce((a, b) => (a.score > b.score ? a : b));
+        Alert.alert("🏆 Swiss Champion!", `${champion.name} wins with ${champion.score} points`, [
+          { text: "OK", onPress: resetTournament },
+        ]);
       } else {
-        const nextRound = round + 1;
-        setRound(nextRound);
+        const next = round + 1;
+        setRound(next);
         setMatchesCompleted(0);
-        generatePairings(updatedPlayers);
+        generatePairings(updated);
       }
     }
   };
 
-  const isMatchDecided = (player1, player2) =>
+  const isMatchDecided = (p1, p2) =>
     matchResults.some(
-      (res) =>
-        res.round === round &&
-        ((res.winner === player1.name && res.loser === player2.name) ||
-          (res.winner === player2.name && res.loser === player1.name))
+      (r) =>
+        r.round === round &&
+        ((r.winner === p1.name && r.loser === p2.name) ||
+          (r.winner === p2.name && r.loser === p1.name))
     );
 
   const resetTournament = async () => {
@@ -169,12 +165,11 @@ export default function SwissBracket() {
         {tournamentName || "Swiss Tournament"}
       </Text>
 
-      <Text className="text-white font-Oxanium text-lg mb-4 text-center">
+      <Text className="text-white font-Oxanium text-lg text-center mb-4">
         Round {round}
       </Text>
 
-      {pairings.map((match, idx) => {
-        const [p1, p2] = match;
+      {pairings.map(([p1, p2], idx) => {
         const decided = isMatchDecided(p1, p2);
 
         return (
@@ -182,7 +177,7 @@ export default function SwissBracket() {
             key={idx}
             className="border border-gray-700 rounded-xl p-4 mb-4 bg-gray-800"
           >
-            <Text className="text-white text-lg mb-2 text-center">
+            <Text className="text-white text-lg text-center mb-2">
               {p1.name} vs {p2.name}
             </Text>
 
@@ -222,9 +217,7 @@ export default function SwissBracket() {
           ])
         }
       >
-        <Text className="text-white text-center font-semibold">
-          Reset Tournament
-        </Text>
+        <Text className="text-white text-center font-semibold">Reset Tournament</Text>
       </Pressable>
 
       <Text className="text-white text-xl font-semibold mt-6 mb-2 font-ShareTech">
