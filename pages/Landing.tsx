@@ -5,6 +5,7 @@ export default function Landing() {
   const navigation = useNavigation();
   return (
     <View className="flex-1 items-center justify-center bg-[#121212]">
+      <Image source={require("../assets/illust.png")} className="object-contain w-[200px] h-[200px]" />
       <Text className="text-5xl font-Oxanium text-white mt-4">XBracket</Text>
       <Text className="text-xl text-white font-ShareTech">Create Local BBX Tournament Brackets!</Text>
       <Pressable
