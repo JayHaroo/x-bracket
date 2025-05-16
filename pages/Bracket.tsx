@@ -148,14 +148,33 @@ export default function Bracket() {
       nextRound[0].length === 1;
 
     if (isLastMatchOfFinal) {
-      Alert.alert("🏆 Tournament Winner!", `${winner.name} has won!`);
+      const winCounts = {};
+
+      // Count wins
+      matchHistory.forEach(({ winner }) => {
+        winCounts[winner.name] = (winCounts[winner.name] || 0) + 1;
+      });
+
+      // Include the last match's winner
+      winCounts[winner.name] = (winCounts[winner.name] || 0) + 1;
+
+      // Sort players by number of wins
+      const ranking = Object.entries(winCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([name], index) => `${index + 1}. ${name}`)
+        .join("\n");
+
+      Alert.alert(
+        "🏆 Tournament Winner!",
+        `${winner.name} has won!\n\nFinal Rankings:\n${ranking}`
+      );
+
       await AsyncStorage.removeItem("lastTournament");
       navigation.goBack();
       return;
     }
 
-    const nextMatch =
-      currentMatch + 1 < current.length ? currentMatch + 1 : 0;
+    const nextMatch = currentMatch + 1 < current.length ? currentMatch + 1 : 0;
     const nextRoundVal =
       currentMatch + 1 < current.length ? currentRound : nextRoundIndex;
 
@@ -220,10 +239,7 @@ export default function Bracket() {
           </View>
 
           {currentMatchData.map((player, idx) => (
-            <View
-              key={idx}
-              className="mb-3 bg-gray-700 p-3 rounded"
-            >
+            <View key={idx} className="mb-3 bg-gray-700 p-3 rounded">
               <Text className="text-white text-lg mb-1">
                 {player.name} - {scores[player.name] || 0} pts
               </Text>
