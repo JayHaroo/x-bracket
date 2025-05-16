@@ -196,7 +196,7 @@ export default function Bracket() {
 
   return (
     <ScrollView className="flex-1 bg-[#121212] px-4 py-6">
-      <View className="flex-row justify-between items-center mb-4">
+      <View className="flex-row justify-between items-center mb-4 mt-5">
         <Text className="text-white font-Oxanium text-3xl text-center">
           {tournamentName || "Tournament Bracket"}
         </Text>
@@ -243,11 +243,12 @@ export default function Bracket() {
               <Text className="text-white text-lg mb-1">
                 {player.name} - {scores[player.name] || 0} pts
               </Text>
+              <View className="items-center">
               <ScrollView horizontal>
                 {[1, 2, 3].map((point) => (
                   <Pressable
                     key={point}
-                    className="bg-[#1DB954] px-3 py-2 rounded-full mx-1"
+                    className="bg-[#1DB954] px-3 py-2 rounded-full mx-1 w-[100px] items-center"
                     onPress={() => addPoints(player.name, point)}
                   >
                     <Text className="text-white text-sm">
@@ -256,6 +257,7 @@ export default function Bracket() {
                   </Pressable>
                 ))}
               </ScrollView>
+              </View>
             </View>
           ))}
 
