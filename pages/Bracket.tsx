@@ -226,13 +226,6 @@ export default function Bracket() {
           </View>
         ))}
       </ScrollView>
-
-      <Pressable
-        onPress={() => navigation.navigate("Main")}
-        className="bg-[#ce3636] rounded-full px-4 py-2 mb-5 self-center"
-      >
-        <Text className="text-white">Back to Main</Text>
-      </Pressable>
     </View>
   );
 }
