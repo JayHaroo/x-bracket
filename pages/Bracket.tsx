@@ -170,7 +170,7 @@ export default function Bracket() {
 
       <Pressable
         onPress={handleAddPlayer}
-        className="bg-[#1d90ff] rounded-full px-4 py-2 mb-4 self-center"
+        className="border-2 border-[#3fff0f] rounded-full px-4 py-2 mb-4 self-center"
       >
         <Text className="text-white">+ Add Player</Text>
       </Pressable>
