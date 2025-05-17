@@ -6,7 +6,6 @@ import {
   Alert,
 } from "react-native";
 import { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
@@ -34,81 +33,111 @@ export default function Bracket() {
   const { players, tournamentName, tournamentType } = route.params;
 
   const [rounds, setRounds] = useState<Match[][]>([]);
+  const [matchPoint, setMatchPoint] = useState<number | null>(null);
 
   useEffect(() => {
-    const initializeBracket = () => {
-      const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
-      const initialRound: Match[] = [];
+    if (matchPoint !== null) {
+      initializeBracket();
+    }
+  }, [matchPoint]);
 
-      for (let i = 0; i < shuffledPlayers.length; i += 2) {
-        const player1 = shuffledPlayers[i];
-        const player2 = shuffledPlayers[i + 1] || null;
+  const initializeBracket = () => {
+    const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+    const initialRound: Match[] = [];
 
-        initialRound.push({
-          player1,
-          player2,
-          winner: null,
-        });
-      }
+    for (let i = 0; i < shuffledPlayers.length; i += 2) {
+      const player1: Player = { ...shuffledPlayers[i], score: 0 };
+      const player2: Player | null = shuffledPlayers[i + 1]
+        ? { ...shuffledPlayers[i + 1], score: 0 }
+        : null;
 
-      setRounds([initialRound]);
-    };
+      initialRound.push({
+        player1,
+        player2,
+        winner: null,
+      });
+    }
 
-    initializeBracket();
-  }, []);
+    setRounds([initialRound]);
+  };
 
-  const handleSelectWinner = (matchIndex: number, winner: Player) => {
+  const handleAddScore = (matchIndex: number, playerNum: 1 | 2, points: number) => {
     const updatedRounds = [...rounds];
     const currentRound = [...updatedRounds[updatedRounds.length - 1]];
-    currentRound[matchIndex].winner = winner;
+    const match = { ...currentRound[matchIndex] };
+
+    if (match.winner) return;
+
+    const targetPlayer = playerNum === 1 ? match.player1 : match.player2;
+
+    if (targetPlayer) {
+      targetPlayer.score += points;
+
+      // Check for winner
+      if (targetPlayer.score >= (matchPoint ?? 5)) {
+        match.winner = targetPlayer;
+      }
+    }
+
+    match.player1 = match.player1;
+    match.player2 = match.player2;
+    currentRound[matchIndex] = match;
     updatedRounds[updatedRounds.length - 1] = currentRound;
 
-    const isRoundComplete = currentRound.every((match) => match.winner !== null);
+    // If match is done and it's the final match
+    if (match.winner && currentRound.length === 1) {
+      setRounds(updatedRounds);
+      Alert.alert("🏆 Tournament Winner", `${match.winner.name} wins the tournament!`, [
+        { text: "OK", onPress: () => navigation.navigate("Main") },
+      ]);
+      return;
+    }
 
-    if (isRoundComplete) {
+    // If all matches in round are complete, generate next round
+    if (currentRound.every((m) => m.winner)) {
       const nextRound: Match[] = [];
-
       for (let i = 0; i < currentRound.length; i += 2) {
         const player1 = currentRound[i].winner;
         const player2 = currentRound[i + 1]?.winner || null;
-        nextRound.push({ player1, player2, winner: null });
+
+        nextRound.push({
+          player1: player1 ? { ...player1, score: 0 } : null,
+          player2: player2 ? { ...player2, score: 0 } : null,
+          winner: null,
+        });
       }
 
       updatedRounds.push(nextRound);
     }
 
     setRounds(updatedRounds);
-
-    // If final round completed
-    const lastRound = updatedRounds[updatedRounds.length - 1];
-    if (lastRound.length === 1 && lastRound[0].winner) {
-      Alert.alert(
-        "Tournament Winner",
-        `${lastRound[0].winner.name} is the winner!`,
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("Main"),
-          },
-        ]
-      );
-
-      AsyncStorage.setItem(
-        "lastTournament",
-        JSON.stringify({
-          tournamentName,
-          tournamentType,
-          rounds: updatedRounds,
-        })
-      );
-    }
   };
+
+  if (matchPoint === null) {
+    return (
+      <View className="flex-1 justify-center items-center bg-[#121212] p-4">
+        <Text className="text-white text-2xl mb-4 font-bold">
+          Select Match Point Limit
+        </Text>
+        {[4, 5, 7].map((point) => (
+          <Pressable
+            key={point}
+            onPress={() => setMatchPoint(point)}
+            className="bg-blue-600 px-6 py-3 rounded-full my-2"
+          >
+            <Text className="text-white text-lg">First to {point}</Text>
+          </Pressable>
+        ))}
+      </View>
+    );
+  }
 
   return (
     <View className="flex-1 bg-[#121212] p-4">
       <Text className="text-white text-3xl font-ShareTech mb-4 mt-4 text-center">
         {tournamentName}
       </Text>
+
       <ScrollView>
         {rounds.map((round, roundIndex) => (
           <View key={roundIndex} className="mb-6">
@@ -118,9 +147,9 @@ export default function Bracket() {
             {round.map((match, matchIndex) => (
               <View
                 key={matchIndex}
-                className="flex-row justify-between items-center border border-gray-600 rounded-lg p-3 mb-3"
+                className="border border-gray-600 rounded-lg p-4 mb-4"
               >
-                <Text className="text-white">
+                <Text className="text-white text-base mb-2">
                   {match.player1?.name ?? "Bye"} vs {match.player2?.name ?? "Bye"}
                 </Text>
 
@@ -129,23 +158,30 @@ export default function Bracket() {
                     Winner: {match.winner.name}
                   </Text>
                 ) : (
-                  <View className="flex-row space-x-2">
-                    {match.player1 && (
-                      <Pressable
-                        className="bg-green-600 rounded-full px-3 py-1"
-                        onPress={() => handleSelectWinner(matchIndex, match.player1!)}
-                      >
-                        <Text className="text-white">{match.player1.name}</Text>
-                      </Pressable>
-                    )}
-                    {match.player2 && (
-                      <Pressable
-                        className="bg-blue-600 rounded-full px-3 py-1"
-                        onPress={() => handleSelectWinner(matchIndex, match.player2!)}
-                      >
-                        <Text className="text-white">{match.player2.name}</Text>
-                      </Pressable>
-                    )}
+                  <View>
+                    {[match.player1, match.player2].map((player, idx) => {
+                      if (!player) return null;
+                      return (
+                        <View key={idx} className="mb-3">
+                          <Text className="text-white mb-1">
+                            {player.name} - Score: {player.score}
+                          </Text>
+                          <View className="flex-row space-x-2">
+                            {[1, 2, 3].map((pt) => (
+                              <Pressable
+                                key={pt}
+                                onPress={() =>
+                                  handleAddScore(matchIndex, idx === 0 ? 1 : 2, pt)
+                                }
+                                className="bg-gray-700 px-3 py-1 rounded-full"
+                              >
+                                <Text className="text-white">+{pt}</Text>
+                              </Pressable>
+                            ))}
+                          </View>
+                        </View>
+                      );
+                    })}
                   </View>
                 )}
               </View>
@@ -153,6 +189,7 @@ export default function Bracket() {
           </View>
         ))}
       </ScrollView>
+
       <Pressable
         onPress={() => navigation.navigate("Main")}
         className="bg-[#ce3636] rounded-full px-4 py-2 mb-5 self-center"
