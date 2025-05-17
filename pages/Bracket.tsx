@@ -149,7 +149,7 @@ export default function Bracket() {
                 key={matchIndex}
                 className="border border-gray-600 rounded-lg p-4 mb-4"
               >
-                <Text className="text-white text-base mb-2">
+                <Text className="text-white text-2xl mb-2 text-[#3fff0f] font-ShareTech">
                   {match.player1?.name ?? "Bye"} vs {match.player2?.name ?? "Bye"}
                 </Text>
 
