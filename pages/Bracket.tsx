@@ -34,6 +34,7 @@ export default function Bracket() {
 
   const [rounds, setRounds] = useState<Match[][]>([]);
   const [matchPoint, setMatchPoint] = useState<number | null>(null);
+  const [playerCount, setPlayerCount] = useState(players.length);
 
   useEffect(() => {
     if (matchPoint !== null) {
@@ -73,18 +74,14 @@ export default function Bracket() {
     if (targetPlayer) {
       targetPlayer.score += points;
 
-      // Check for winner
       if (targetPlayer.score >= (matchPoint ?? 5)) {
         match.winner = targetPlayer;
       }
     }
 
-    match.player1 = match.player1;
-    match.player2 = match.player2;
     currentRound[matchIndex] = match;
     updatedRounds[updatedRounds.length - 1] = currentRound;
 
-    // If match is done and it's the final match
     if (match.winner && currentRound.length === 1) {
       setRounds(updatedRounds);
       Alert.alert("🏆 Tournament Winner", `${match.winner.name} wins the tournament!`, [
@@ -93,7 +90,6 @@ export default function Bracket() {
       return;
     }
 
-    // If all matches in round are complete, generate next round
     if (currentRound.every((m) => m.winner)) {
       const nextRound: Match[] = [];
       for (let i = 0; i < currentRound.length; i += 2) {
@@ -111,6 +107,40 @@ export default function Bracket() {
     }
 
     setRounds(updatedRounds);
+  };
+
+  const handleAddPlayer = () => {
+    const name = `Player ${playerCount + 1}`;
+    const newPlayer: Player = { name, score: 0 };
+    const updatedRounds = [...rounds];
+    const currentRound = [...updatedRounds[0]];
+
+    let placed = false;
+
+    for (let i = 0; i < currentRound.length; i++) {
+      const match = currentRound[i];
+      if (!match.player1) {
+        match.player1 = newPlayer;
+        placed = true;
+        break;
+      } else if (!match.player2) {
+        match.player2 = newPlayer;
+        placed = true;
+        break;
+      }
+    }
+
+    if (!placed) {
+      currentRound.push({
+        player1: newPlayer,
+        player2: null,
+        winner: null,
+      });
+    }
+
+    updatedRounds[0] = currentRound;
+    setRounds(updatedRounds);
+    setPlayerCount(playerCount + 1);
   };
 
   if (matchPoint === null) {
@@ -137,6 +167,13 @@ export default function Bracket() {
       <Text className="text-white text-3xl font-ShareTech mb-4 mt-4 text-center">
         {tournamentName}
       </Text>
+
+      <Pressable
+        onPress={handleAddPlayer}
+        className="bg-[#1d90ff] rounded-full px-4 py-2 mb-4 self-center"
+      >
+        <Text className="text-white">+ Add Player</Text>
+      </Pressable>
 
       <ScrollView>
         {rounds.map((round, roundIndex) => (
