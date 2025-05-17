@@ -7,18 +7,28 @@ import {
   TextInput,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import word1 from "../assets/data/word1.json";
 import word2 from "../assets/data/word2.json";
+import { RootStackParamList } from "../App";
+
+interface Player {
+  name: string;
+  score: number;
+}
+
+type MainScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
 
 export default function Main() {
-  const navigation = useNavigation();
-  const [players, setPlayers] = useState([]);
+  const navigation = useNavigation<MainScreenNavigationProp>();
+  const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerName, setNewPlayerName] = useState("");
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentType, setTournamentType] = useState("single-elimination");
-  const [word1Data, setWord1Data] = useState([]);
-  const [word2Data, setWord2Data] = useState([]);
+  const [word1Data, setWord1Data] = useState<string[]>([]);
+  const [word2Data, setWord2Data] = useState<string[]>([]);
 
   useEffect(() => {
     setWord1Data(word1);
@@ -42,7 +52,6 @@ export default function Main() {
                   players: parsed.rounds[0].flat(), // flattened for compatibility
                   tournamentName: parsed.tournamentName,
                   tournamentType: parsed.tournamentType,
-                  resume: true,
                 });
               },
             },
@@ -58,7 +67,7 @@ export default function Main() {
     }
   };
 
-  const randomWords = (word1Data, word2Data) => {
+  const randomWords = (word1Data: string[], word2Data: string[]) => {
     const randomWord1 = word1Data[Math.floor(Math.random() * word1Data.length)];
     const randomWord2 = word2Data[Math.floor(Math.random() * word2Data.length)];
     const word = randomWord1 + " " + randomWord2;
@@ -71,7 +80,7 @@ export default function Main() {
     setNewPlayerName(""); // Clear input after adding
   };
 
-  const removePlayer = (indexToRemove) => {
+  const removePlayer = (indexToRemove: number) => {
     console.log("Removing player at index:", indexToRemove);
     setPlayers((prevPlayers) => {
       const newPlayers = prevPlayers.filter(
@@ -121,7 +130,7 @@ export default function Main() {
           </Text>
           <Pressable
             className="bg-[#ce3636] rounded-full px-4 py-2 mt-4"
-            onPress={navigation.goBack}
+            onPress={() => navigation.navigate("Landing")}
           >
             <Text className="text-white p-1">Back</Text>
           </Pressable>

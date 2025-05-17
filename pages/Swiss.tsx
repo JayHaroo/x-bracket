@@ -8,17 +8,43 @@ import {
   ActivityIndicator,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute, useNavigation, RouteProp } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../App";
+
+interface Player {
+  name: string;
+  score: number;
+  history: string[];
+}
+
+interface SwissTournamentState {
+  players: Player[];
+  round: number;
+  pairings: [Player, Player][];
+  matchResults: Array<{
+    round: number;
+    winner: string;
+    loser: string;
+  }>;
+}
+
+type SwissScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Swiss'>;
+type SwissScreenRouteProp = RouteProp<RootStackParamList, 'Swiss'>;
 
 export default function SwissBracket() {
-  const route = useRoute();
-  const navigation = useNavigation();
+  const route = useRoute<SwissScreenRouteProp>();
+  const navigation = useNavigation<SwissScreenNavigationProp>();
   const { players: initialPlayers, tournamentName } = route.params;
 
-  const [players, setPlayers] = useState([]);
+  const [players, setPlayers] = useState<Player[]>([]);
   const [round, setRound] = useState(1);
-  const [pairings, setPairings] = useState([]);
-  const [matchResults, setMatchResults] = useState([]);
+  const [pairings, setPairings] = useState<[Player, Player][]>([]);
+  const [matchResults, setMatchResults] = useState<Array<{
+    round: number;
+    winner: string;
+    loser: string;
+  }>>([]);
   const [loading, setLoading] = useState(true);
   const [matchesCompleted, setMatchesCompleted] = useState(0);
 
@@ -30,7 +56,7 @@ export default function SwissBracket() {
     try {
       const saved = await AsyncStorage.getItem("swissTournament");
       if (saved) {
-        const data = JSON.parse(saved);
+        const data = JSON.parse(saved) as SwissTournamentState;
         setPlayers(data.players);
         setRound(data.round);
         setMatchResults(data.matchResults);
@@ -51,47 +77,34 @@ export default function SwissBracket() {
     }
   };
 
-  const saveTournament = async (newData) => {
-    await AsyncStorage.setItem("swissTournament", JSON.stringify(newData));
+  const saveTournament = async (newData: Partial<SwissTournamentState>) => {
+    const currentState: SwissTournamentState = {
+      players,
+      round,
+      pairings,
+      matchResults,
+      ...newData
+    };
+    await AsyncStorage.setItem("swissTournament", JSON.stringify(currentState));
   };
 
-  const generatePairings = (playerList) => {
-    const sorted = [...playerList].sort((a, b) => b.score - a.score);
-    const newPairs = [];
-    const used = new Set();
+  const generatePairings = (playerList: Player[]) => {
+    const sortedPlayers = [...playerList].sort((a, b) => b.score - a.score);
+    const newPairings: [Player, Player][] = [];
 
-    for (let i = 0; i < sorted.length; i++) {
-      if (used.has(i)) continue;
-
-      for (let j = i + 1; j < sorted.length; j++) {
-        if (
-          !used.has(j) &&
-          sorted[i].score === sorted[j].score &&
-          !sorted[i].history.includes(sorted[j].name)
-        ) {
-          newPairs.push([sorted[i], sorted[j]]);
-          used.add(i);
-          used.add(j);
-          break;
-        }
-      }
-
-      if (!used.has(i)) {
-        newPairs.push([sorted[i], { name: "Bye", score: 0 }]);
-        used.add(i);
+    for (let i = 0; i < sortedPlayers.length; i += 2) {
+      if (i + 1 < sortedPlayers.length) {
+        newPairings.push([sortedPlayers[i], sortedPlayers[i + 1]]);
+      } else {
+        newPairings.push([sortedPlayers[i], { name: "Bye", score: 0, history: [] }]);
       }
     }
 
-    setPairings(newPairs);
-    saveTournament({
-      players: playerList,
-      round,
-      pairings: newPairs,
-      matchResults,
-    });
+    setPairings(newPairings);
+    saveTournament({ pairings: newPairings });
   };
 
-  const handleMatchResult = (winnerName, loserName) => {
+  const handleMatchResult = (winnerName: string, loserName: string) => {
     const updated = players.map((p) => {
       if (p.name === winnerName) {
         return { ...p, score: p.score + 1, history: [...p.history, loserName] };
@@ -137,7 +150,16 @@ export default function SwissBracket() {
     setRound(1);
     setPairings([]);
     setMatchResults([]);
-    navigation.goBack(); // Or you could reload the screen
+    navigation.navigate("Main");
+  };
+
+  const isMatchDecided = (player1: Player, player2: Player) => {
+    return matchResults.some(
+      (result) =>
+        result.round === round &&
+        ((result.winner === player1.name && result.loser === player2.name) ||
+          (result.winner === player2.name && result.loser === player1.name))
+    );
   };
 
   if (loading) {
@@ -147,15 +169,6 @@ export default function SwissBracket() {
       </View>
     );
   }
-
-  const isMatchDecided = (player1, player2) => {
-    return matchResults.some(
-      (result) =>
-        result.round === round &&
-        ((result.winner === player1.name && result.loser === player2.name) ||
-          (result.winner === player2.name && result.loser === player1.name))
-    );
-  };
 
   return (
     <ScrollView className="flex-1 bg-[#121212] px-4 py-6">

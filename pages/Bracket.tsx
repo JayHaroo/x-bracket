@@ -1,273 +1,164 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, Pressable, ScrollView, Alert } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Alert,
+} from "react-native";
+import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../App";
+
+type BracketScreenRouteProp = RouteProp<RootStackParamList, "Bracket">;
+type BracketScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Bracket"
+>;
+
+interface Match {
+  player1: Player | null;
+  player2: Player | null;
+  winner: Player | null;
+}
+
+interface Player {
+  name: string;
+  score: number;
+}
 
 export default function Bracket() {
-  const { params } = useRoute();
-  const navigation = useNavigation();
-  const { players, tournamentName } = params;
+  const navigation = useNavigation<BracketScreenNavigationProp>();
+  const route = useRoute<BracketScreenRouteProp>();
+  const { players, tournamentName, tournamentType } = route.params;
 
-  const [rounds, setRounds] = useState([]);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [currentMatch, setCurrentMatch] = useState(0);
-  const [matchHistory, setMatchHistory] = useState([]);
-  const [scores, setScores] = useState({});
+  const [rounds, setRounds] = useState<Match[][]>([]);
 
   useEffect(() => {
-    const loadState = async () => {
-      const saved = await AsyncStorage.getItem("lastTournament");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setRounds(parsed.rounds || []);
-        setCurrentRound(parsed.currentRound || 0);
-        setCurrentMatch(parsed.currentMatch || 0);
-        setMatchHistory(parsed.matchHistory || []);
-        setScores(parsed.scores || {});
-      } else {
-        if (players.length < 2) {
-          Alert.alert("Error", "At least 2 players are required.");
-        } else {
-          generateBracket();
-        }
+    const initializeBracket = () => {
+      const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+      const initialRound: Match[] = [];
+
+      for (let i = 0; i < shuffledPlayers.length; i += 2) {
+        const player1 = shuffledPlayers[i];
+        const player2 = shuffledPlayers[i + 1] || null;
+
+        initialRound.push({
+          player1,
+          player2,
+          winner: null,
+        });
       }
+
+      setRounds([initialRound]);
     };
-    loadState();
-  }, [players]);
 
-  const saveState = async (extra = {}) => {
-    await AsyncStorage.setItem(
-      "lastTournament",
-      JSON.stringify({
-        tournamentName,
-        rounds,
-        currentRound,
-        currentMatch,
-        matchHistory,
-        scores,
-        ...extra,
-      })
-    );
-  };
+    initializeBracket();
+  }, []);
 
-  const shuffle = (arr) => {
-    return arr
-      .map((a) => [Math.random(), a])
-      .sort((a, b) => a[0] - b[0])
-      .map((a) => a[1]);
-  };
-
-  const generateBracket = async () => {
-    const shuffled = shuffle(players);
-    const firstRound = [];
-
-    for (let i = 0; i < shuffled.length; i += 2) {
-      if (shuffled[i + 1]) {
-        firstRound.push([
-          { ...shuffled[i], score: 0 },
-          { ...shuffled[i + 1], score: 0 },
-        ]);
-      } else {
-        firstRound.push([
-          { ...shuffled[i], score: 0 },
-          { name: "Wildcard (Bye)", score: 0 },
-        ]);
-      }
-    }
-
-    const newRounds = [firstRound];
-    setRounds(newRounds);
-    setCurrentRound(0);
-    setCurrentMatch(0);
-    setMatchHistory([]);
-    setScores({});
-    await saveState({
-      rounds: newRounds,
-      currentRound: 0,
-      currentMatch: 0,
-      matchHistory: [],
-      scores: {},
-    });
-  };
-
-  const getCurrentMatch = () => {
-    const round = rounds[currentRound] || [];
-    return round[currentMatch] || null;
-  };
-
-  const addPoints = (playerName, points) => {
-    setScores((prev) => {
-      const newScore = (prev[playerName] || 0) + points;
-      const updated = { ...prev, [playerName]: newScore };
-
-      const match = getCurrentMatch();
-      const winner = match?.find((p) => p.name === playerName);
-
-      if (newScore >= 5 && winner) {
-        Alert.alert("Match Finished", `${winner.name} reached 5 points!`, [
-          {
-            text: "OK",
-            onPress: () => playMatch(winner),
-          },
-        ]);
-      }
-
-      saveState({ scores: updated });
-      return updated;
-    });
-  };
-
-  const playMatch = async (winner) => {
+  const handleSelectWinner = (matchIndex: number, winner: Player) => {
     const updatedRounds = [...rounds];
-    const current = updatedRounds[currentRound];
-    const nextRoundIndex = currentRound + 1;
+    const currentRound = [...updatedRounds[updatedRounds.length - 1]];
+    currentRound[matchIndex].winner = winner;
+    updatedRounds[updatedRounds.length - 1] = currentRound;
 
-    if (!updatedRounds[nextRoundIndex]) updatedRounds[nextRoundIndex] = [];
+    const isRoundComplete = currentRound.every((match) => match.winner !== null);
 
-    const nextRound = updatedRounds[nextRoundIndex];
-    const lastPair = nextRound[nextRound.length - 1];
+    if (isRoundComplete) {
+      const nextRound: Match[] = [];
 
-    if (!lastPair || lastPair.length === 2) {
-      nextRound.push([winner]);
-    } else {
-      lastPair.push(winner);
+      for (let i = 0; i < currentRound.length; i += 2) {
+        const player1 = currentRound[i].winner;
+        const player2 = currentRound[i + 1]?.winner || null;
+        nextRound.push({ player1, player2, winner: null });
+      }
+
+      updatedRounds.push(nextRound);
     }
-
-    const updatedMatchHistory = [
-      ...matchHistory,
-      {
-        round: currentRound + 1,
-        match: currentMatch + 1,
-        winner,
-      },
-    ];
-
-    const isLastMatchOfFinal =
-      current.length === currentMatch + 1 &&
-      nextRound.length === 1 &&
-      nextRound[0].length === 1;
-
-    if (isLastMatchOfFinal) {
-      Alert.alert("🏆 Tournament Winner!", `${winner.name} has won!`);
-      await AsyncStorage.removeItem("lastTournament");
-      navigation.goBack();
-      return;
-    }
-
-    const nextMatch =
-      currentMatch + 1 < current.length ? currentMatch + 1 : 0;
-    const nextRoundVal =
-      currentMatch + 1 < current.length ? currentRound : nextRoundIndex;
 
     setRounds(updatedRounds);
-    setMatchHistory(updatedMatchHistory);
-    setCurrentRound(nextRoundVal);
-    setCurrentMatch(nextMatch);
-    setScores({});
-    await saveState({
-      rounds: updatedRounds,
-      matchHistory: updatedMatchHistory,
-      currentRound: nextRoundVal,
-      currentMatch: nextMatch,
-      scores: {},
-    });
+
+    // If final round completed
+    const lastRound = updatedRounds[updatedRounds.length - 1];
+    if (lastRound.length === 1 && lastRound[0].winner) {
+      Alert.alert(
+        "Tournament Winner",
+        `${lastRound[0].winner.name} is the winner!`,
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Main"),
+          },
+        ]
+      );
+
+      AsyncStorage.setItem(
+        "lastTournament",
+        JSON.stringify({
+          tournamentName,
+          tournamentType,
+          rounds: updatedRounds,
+        })
+      );
+    }
   };
 
-  const currentMatchData = getCurrentMatch();
-
   return (
-    <ScrollView className="flex-1 bg-[#121212] px-4 py-6">
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-white font-Oxanium text-3xl text-center">
-          {tournamentName || "Tournament Bracket"}
-        </Text>
-        <Pressable
-          className="bg-red-600 rounded-full px-4 py-2"
-          onPress={async () => {
-            await AsyncStorage.removeItem("lastTournament");
-            generateBracket();
-          }}
-        >
-          <Text className="text-white">Reset</Text>
-        </Pressable>
-      </View>
+    <View className="flex-1 bg-[#121212] p-4">
+      <Text className="text-white text-3xl font-ShareTech mb-4 mt-4 text-center">
+        {tournamentName}
+      </Text>
+      <ScrollView>
+        {rounds.map((round, roundIndex) => (
+          <View key={roundIndex} className="mb-6">
+            <Text className="text-white text-xl font-semibold mb-2">
+              Round {roundIndex + 1}
+            </Text>
+            {round.map((match, matchIndex) => (
+              <View
+                key={matchIndex}
+                className="flex-row justify-between items-center border border-gray-600 rounded-lg p-3 mb-3"
+              >
+                <Text className="text-white">
+                  {match.player1?.name ?? "Bye"} vs {match.player2?.name ?? "Bye"}
+                </Text>
 
-      {rounds.map((round, rIndex) => (
-        <View key={rIndex} className="mb-6">
-          <Text className="text-white text-xl font-semibold mb-2">
-            Round {rIndex + 1}
-          </Text>
-          {round.map((match, mIndex) => (
-            <View
-              key={mIndex}
-              className="flex-row justify-between border border-gray-700 p-3 rounded mb-1"
-            >
-              <Text className="text-white">{match[0]?.name}</Text>
-              <Text className="text-white">vs</Text>
-              <Text className="text-white">{match[1]?.name}</Text>
-            </View>
-          ))}
-        </View>
-      ))}
-
-      {currentMatchData && (
-        <View className="mt-6">
-          <Text className="text-white text-xl mb-2">Current Match</Text>
-          <View className="flex-row justify-between border border-[#1DB954] p-3 rounded mb-4">
-            <Text className="text-white">{currentMatchData[0].name}</Text>
-            <Text className="text-white">vs</Text>
-            <Text className="text-white">{currentMatchData[1].name}</Text>
+                {match.winner ? (
+                  <Text className="text-green-400 font-bold">
+                    Winner: {match.winner.name}
+                  </Text>
+                ) : (
+                  <View className="flex-row space-x-2">
+                    {match.player1 && (
+                      <Pressable
+                        className="bg-green-600 rounded-full px-3 py-1"
+                        onPress={() => handleSelectWinner(matchIndex, match.player1!)}
+                      >
+                        <Text className="text-white">{match.player1.name}</Text>
+                      </Pressable>
+                    )}
+                    {match.player2 && (
+                      <Pressable
+                        className="bg-blue-600 rounded-full px-3 py-1"
+                        onPress={() => handleSelectWinner(matchIndex, match.player2!)}
+                      >
+                        <Text className="text-white">{match.player2.name}</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                )}
+              </View>
+            ))}
           </View>
-
-          {currentMatchData.map((player, idx) => (
-            <View
-              key={idx}
-              className="mb-3 bg-gray-700 p-3 rounded"
-            >
-              <Text className="text-white text-lg mb-1">
-                {player.name} - {scores[player.name] || 0} pts
-              </Text>
-              <ScrollView horizontal>
-                {[1, 2, 3].map((point) => (
-                  <Pressable
-                    key={point}
-                    className="bg-[#1DB954] px-3 py-2 rounded-full mx-1"
-                    onPress={() => addPoints(player.name, point)}
-                  >
-                    <Text className="text-white text-sm">
-                      +{point} pt{point > 1 ? "s" : ""}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
-          ))}
-
-          <Text className="text-white mt-4 mb-2">Or set winner manually:</Text>
-          {currentMatchData.map((player, idx) => (
-            <Pressable
-              key={idx}
-              className="border border-[#ce3636] px-4 py-2 rounded-full mb-2"
-              onPress={() => playMatch(player)}
-            >
-              <Text className="text-white text-center">
-                Set {player.name} as Winner
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      )}
-
-      <View className="mt-8">
-        <Text className="text-white text-lg font-semibold mb-2">
-          Match History
-        </Text>
-        {matchHistory.map((match, idx) => (
-          <Text key={idx} className="text-white">
-            Round {match.round} Match {match.match}: {match.winner.name}
-          </Text>
         ))}
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <Pressable
+        onPress={() => navigation.navigate("Main")}
+        className="bg-[#ce3636] rounded-full px-4 py-2 mb-5 self-center"
+      >
+        <Text className="text-white">Back to Main</Text>
+      </Pressable>
+    </View>
   );
 }
