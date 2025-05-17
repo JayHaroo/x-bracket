@@ -123,7 +123,7 @@ export default function Bracket() {
           <Pressable
             key={point}
             onPress={() => setMatchPoint(point)}
-            className="bg-blue-600 px-6 py-3 rounded-full my-2"
+            className="border-2 border-[#38ff1d] px-6 py-3 rounded-full my-2"
           >
             <Text className="text-white text-lg">First to {point}</Text>
           </Pressable>
@@ -141,7 +141,7 @@ export default function Bracket() {
       <ScrollView>
         {rounds.map((round, roundIndex) => (
           <View key={roundIndex} className="mb-6">
-            <Text className="text-white text-xl font-semibold mb-2">
+            <Text className="text-white text-3xl font-semibold mb-2 font-ShareTech">
               Round {roundIndex + 1}
             </Text>
             {round.map((match, matchIndex) => (
@@ -166,14 +166,14 @@ export default function Bracket() {
                           <Text className="text-white mb-1">
                             {player.name} - Score: {player.score}
                           </Text>
-                          <View className="flex-row space-x-2">
+                          <View className="flex-row space-x-2 justify-evenly">
                             {[1, 2, 3].map((pt) => (
                               <Pressable
                                 key={pt}
                                 onPress={() =>
                                   handleAddScore(matchIndex, idx === 0 ? 1 : 2, pt)
                                 }
-                                className="bg-gray-700 px-3 py-1 rounded-full"
+                                className="bg-gray-700 w-[100px] items-center px-3 py-1 rounded-full"
                               >
                                 <Text className="text-white">+{pt}</Text>
                               </Pressable>
