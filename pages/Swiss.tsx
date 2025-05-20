@@ -29,8 +29,11 @@ interface SwissTournamentState {
   }>;
 }
 
-type SwissScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Swiss'>;
-type SwissScreenRouteProp = RouteProp<RootStackParamList, 'Swiss'>;
+type SwissScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Swiss"
+>;
+type SwissScreenRouteProp = RouteProp<RootStackParamList, "Swiss">;
 
 export default function SwissBracket() {
   const route = useRoute<SwissScreenRouteProp>();
@@ -40,11 +43,13 @@ export default function SwissBracket() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [round, setRound] = useState(1);
   const [pairings, setPairings] = useState<[Player, Player][]>([]);
-  const [matchResults, setMatchResults] = useState<Array<{
-    round: number;
-    winner: string;
-    loser: string;
-  }>>([]);
+  const [matchResults, setMatchResults] = useState<
+    Array<{
+      round: number;
+      winner: string;
+      loser: string;
+    }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [matchesCompleted, setMatchesCompleted] = useState(0);
 
@@ -83,48 +88,47 @@ export default function SwissBracket() {
       round,
       pairings,
       matchResults,
-      ...newData
+      ...newData,
     };
     await AsyncStorage.setItem("swissTournament", JSON.stringify(currentState));
   };
 
-const generatePairings = (playerList: Player[]) => {
-  const sortedPlayers = [...playerList].sort((a, b) => b.score - a.score);
-  const used = new Set<string>();
-  const newPairings: [Player, Player][] = [];
+  const generatePairings = (playerList: Player[]) => {
+    const sortedPlayers = [...playerList].sort((a, b) => b.score - a.score);
+    const used = new Set<string>();
+    const newPairings: [Player, Player][] = [];
 
-  for (let i = 0; i < sortedPlayers.length; i++) {
-    const p1 = sortedPlayers[i];
-    if (used.has(p1.name)) continue;
+    for (let i = 0; i < sortedPlayers.length; i++) {
+      const p1 = sortedPlayers[i];
+      if (used.has(p1.name)) continue;
 
-    let paired = false;
+      let paired = false;
 
-    for (let j = i + 1; j < sortedPlayers.length; j++) {
-      const p2 = sortedPlayers[j];
-      if (
-        !used.has(p2.name) &&
-        !p1.history.includes(p2.name) &&
-        !p2.history.includes(p1.name)
-      ) {
-        newPairings.push([p1, p2]);
+      for (let j = i + 1; j < sortedPlayers.length; j++) {
+        const p2 = sortedPlayers[j];
+        if (
+          !used.has(p2.name) &&
+          !p1.history.includes(p2.name) &&
+          !p2.history.includes(p1.name)
+        ) {
+          newPairings.push([p1, p2]);
+          used.add(p1.name);
+          used.add(p2.name);
+          paired = true;
+          break;
+        }
+      }
+
+      // Give a BYE if no one left to pair with
+      if (!paired) {
+        newPairings.push([p1, { name: "Bye", score: 0, history: [] }]);
         used.add(p1.name);
-        used.add(p2.name);
-        paired = true;
-        break;
       }
     }
 
-    // Give a BYE if no one left to pair with
-    if (!paired) {
-      newPairings.push([p1, { name: "Bye", score: 0, history: [] }]);
-      used.add(p1.name);
-    }
-  }
-
-  setPairings(newPairings);
-  saveTournament({ pairings: newPairings });
-};
-
+    setPairings(newPairings);
+    saveTournament({ pairings: newPairings });
+  };
 
   const handleMatchResult = (winnerName: string, loserName: string) => {
     const updated = players.map((p) => {
@@ -215,8 +219,8 @@ const generatePairings = (playerList: Player[]) => {
               disabled={isMatchDecided(match[0], match[1])}
               className={`px-4 py-2 rounded-full ${
                 isMatchDecided(match[0], match[1])
-                  ? "bg-gray-600"
-                  : "bg-[#1DB954]"
+                  ? "border-2 border-gray-600"
+                  : "border-2 border-[#1DB954]"
               }`}
               onPress={() => handleMatchResult(match[0].name, match[1].name)}
             >
@@ -228,8 +232,8 @@ const generatePairings = (playerList: Player[]) => {
                 disabled={isMatchDecided(match[0], match[1])}
                 className={`px-4 py-2 rounded-full ${
                   isMatchDecided(match[0], match[1])
-                    ? "bg-gray-600"
-                    : "bg-[#1DB954]"
+                    ? "border-2 border-gray-600"
+                    : "border-2 border-[#1DB954]"
                 }`}
                 onPress={() => handleMatchResult(match[1].name, match[0].name)}
               >
@@ -240,7 +244,7 @@ const generatePairings = (playerList: Player[]) => {
         </View>
       ))}
       <Pressable
-        className="bg-[#ce3636] px-4 py-2 rounded-full mt-8 mb-6"
+        className="border-2 border-[#ce3636] px-4 py-2 rounded-full mt-8 mb-6"
         onPress={() =>
           Alert.alert("Reset Tournament", "Are you sure?", [
             { text: "Cancel", style: "cancel" },
