@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
+import { useKeepAwake } from 'expo-keep-awake';
 
 type BracketScreenRouteProp = RouteProp<RootStackParamList, "Bracket">;
 type BracketScreenNavigationProp = NativeStackNavigationProp<
@@ -22,6 +23,7 @@ interface Player {
 }
 
 export default function Bracket() {
+  useKeepAwake();
   const navigation = useNavigation<BracketScreenNavigationProp>();
   const route = useRoute<BracketScreenRouteProp>();
   const { players, tournamentName, tournamentType } = route.params;
