@@ -88,21 +88,43 @@ export default function SwissBracket() {
     await AsyncStorage.setItem("swissTournament", JSON.stringify(currentState));
   };
 
-  const generatePairings = (playerList: Player[]) => {
-    const sortedPlayers = [...playerList].sort((a, b) => b.score - a.score);
-    const newPairings: [Player, Player][] = [];
+const generatePairings = (playerList: Player[]) => {
+  const sortedPlayers = [...playerList].sort((a, b) => b.score - a.score);
+  const used = new Set<string>();
+  const newPairings: [Player, Player][] = [];
 
-    for (let i = 0; i < sortedPlayers.length; i += 2) {
-      if (i + 1 < sortedPlayers.length) {
-        newPairings.push([sortedPlayers[i], sortedPlayers[i + 1]]);
-      } else {
-        newPairings.push([sortedPlayers[i], { name: "Bye", score: 0, history: [] }]);
+  for (let i = 0; i < sortedPlayers.length; i++) {
+    const p1 = sortedPlayers[i];
+    if (used.has(p1.name)) continue;
+
+    let paired = false;
+
+    for (let j = i + 1; j < sortedPlayers.length; j++) {
+      const p2 = sortedPlayers[j];
+      if (
+        !used.has(p2.name) &&
+        !p1.history.includes(p2.name) &&
+        !p2.history.includes(p1.name)
+      ) {
+        newPairings.push([p1, p2]);
+        used.add(p1.name);
+        used.add(p2.name);
+        paired = true;
+        break;
       }
     }
 
-    setPairings(newPairings);
-    saveTournament({ pairings: newPairings });
-  };
+    // Give a BYE if no one left to pair with
+    if (!paired) {
+      newPairings.push([p1, { name: "Bye", score: 0, history: [] }]);
+      used.add(p1.name);
+    }
+  }
+
+  setPairings(newPairings);
+  saveTournament({ pairings: newPairings });
+};
+
 
   const handleMatchResult = (winnerName: string, loserName: string) => {
     const updated = players.map((p) => {
