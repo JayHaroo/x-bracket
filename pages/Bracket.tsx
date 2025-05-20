@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../App";
-import { useKeepAwake } from 'expo-keep-awake';
+import { useKeepAwake } from "expo-keep-awake";
 
 type BracketScreenRouteProp = RouteProp<RootStackParamList, "Bracket">;
 type BracketScreenNavigationProp = NativeStackNavigationProp<
@@ -179,12 +179,35 @@ export default function Bracket() {
             onPress={() => setMatchPoint(point)}
             className="border-2 border-[#38ff1d] px-6 py-3 rounded-full my-2"
           >
-            <Text className="text-white text-lg font-Oxanium">First to {point}</Text>
+            <Text className="text-white text-lg font-Oxanium">
+              First to {point}
+            </Text>
           </Pressable>
         ))}
       </View>
     );
   }
+
+  const handleRemovePlayer = (playerName: string) => {
+    const updatedRounds = [...rounds];
+    const currentRound = [...updatedRounds[0]];
+
+    const newRound = currentRound
+      .map((match) => {
+        if (match.player1?.name === playerName) {
+          return { ...match, player1: null, winner: null };
+        }
+        if (match.player2?.name === playerName) {
+          return { ...match, player2: null, winner: null };
+        }
+        return match;
+      })
+      .filter((match) => match.player1 || match.player2); // remove empty matches
+
+    updatedRounds[0] = newRound;
+    setRounds(updatedRounds);
+    setPlayerCount((prev) => prev - 1);
+  };
 
   return (
     <View className="flex-1 bg-[#121212] p-4">
@@ -225,9 +248,36 @@ export default function Bracket() {
                       if (!player) return null;
                       return (
                         <View key={idx} className="mb-3">
-                          <Text className="text-white mb-1">
-                            {player.name} - Score: {player.score}
-                          </Text>
+                          <View className="flex-row justify-between items-center mb-5">
+                            <Text className="text-white">
+                              {player.name} - Score: {player.score}
+                            </Text>
+                            {roundIndex === 0 && (
+                              <Pressable
+                                onPress={() =>
+                                  Alert.alert(
+                                    "Remove Player",
+                                    `Are you sure you want to remove ${player.name}?`,
+                                    [
+                                      { text: "Cancel", style: "cancel" },
+                                      {
+                                        text: "Remove",
+                                        style: "destructive",
+                                        onPress: () =>
+                                          handleRemovePlayer(player.name),
+                                      },
+                                    ]
+                                  )
+                                }
+                                className="bg-red-600 px-3 py-2 rounded-full ml-2"
+                              >
+                                <Text className="text-white text-xs">
+                                  Remove
+                                </Text>
+                              </Pressable>
+                            )}
+                          </View>
+
                           <View className="flex-row space-x-2 justify-evenly">
                             {[1, 2, 3].map((pt) => (
                               <Pressable
@@ -241,7 +291,9 @@ export default function Bracket() {
                                 }
                                 className="border-2 border-[#3fff0f] w-[100px] h-[40px] justify-center items-center px-3 py-1 rounded-full mb-4"
                               >
-                                <Text className="text-white text-[20px]">+{pt}</Text>
+                                <Text className="text-white text-[20px]">
+                                  +{pt}
+                                </Text>
                               </Pressable>
                             ))}
                           </View>
@@ -258,7 +310,9 @@ export default function Bracket() {
                                 }
                                 className="border-2 border-[#fa2c2c] w-[100px] items-center px-3 py-1 rounded-full"
                               >
-                                <Text className="text-white text-[20px]">-{pt}</Text>
+                                <Text className="text-white text-[20px]">
+                                  -{pt}
+                                </Text>
                               </Pressable>
                             ))}
                           </View>
