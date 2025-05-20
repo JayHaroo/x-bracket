@@ -168,7 +168,7 @@ export default function Bracket() {
   if (matchPoint === null) {
     return (
       <View className="flex-1 justify-center items-center bg-[#121212] p-4">
-        <Text className="text-white text-2xl mb-4 font-bold">
+        <Text className="text-white text-4xl mb-4 font-ShareTech">
           Select Match Point Limit
         </Text>
         {[4, 5, 7].map((point) => (
@@ -177,7 +177,7 @@ export default function Bracket() {
             onPress={() => setMatchPoint(point)}
             className="border-2 border-[#38ff1d] px-6 py-3 rounded-full my-2"
           >
-            <Text className="text-white text-lg">First to {point}</Text>
+            <Text className="text-white text-lg font-Oxanium">First to {point}</Text>
           </Pressable>
         ))}
       </View>
