@@ -1,10 +1,4 @@
-import {
-  View,
-  Text,
-  Pressable,
-  ScrollView,
-  Alert,
-} from "react-native";
+import { View, Text, Pressable, ScrollView, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -62,7 +56,11 @@ export default function Bracket() {
     setRounds([initialRound]);
   };
 
-  const handleAddScore = (matchIndex: number, playerNum: 1 | 2, points: number) => {
+  const handleAddScore = (
+    matchIndex: number,
+    playerNum: 1 | 2,
+    points: number
+  ) => {
     const updatedRounds = [...rounds];
     const currentRound = [...updatedRounds[updatedRounds.length - 1]];
     const match = { ...currentRound[matchIndex] };
@@ -84,9 +82,11 @@ export default function Bracket() {
 
     if (match.winner && currentRound.length === 1) {
       setRounds(updatedRounds);
-      Alert.alert("🏆 Tournament Winner", `${match.winner.name} wins the tournament!`, [
-        { text: "OK", onPress: () => navigation.navigate("Main") },
-      ]);
+      Alert.alert(
+        "🏆 Tournament Winner",
+        `${match.winner.name} wins the tournament!`,
+        [{ text: "OK", onPress: () => navigation.navigate("Main") }]
+      );
       return;
     }
 
@@ -106,6 +106,28 @@ export default function Bracket() {
       updatedRounds.push(nextRound);
     }
 
+    setRounds(updatedRounds);
+  };
+
+  const handleSubtractScore = (
+    matchIndex: number,
+    playerNum: 1 | 2,
+    points: number
+  ) => {
+    const updatedRounds = [...rounds];
+    const currentRound = [...updatedRounds[updatedRounds.length - 1]];
+    const match = { ...currentRound[matchIndex] };
+
+    if (match.winner) return;
+
+    const targetPlayer = playerNum === 1 ? match.player1 : match.player2;
+
+    if (targetPlayer) {
+      targetPlayer.score = Math.max(0, targetPlayer.score - points);
+    }
+
+    currentRound[matchIndex] = match;
+    updatedRounds[updatedRounds.length - 1] = currentRound;
     setRounds(updatedRounds);
   };
 
@@ -187,7 +209,8 @@ export default function Bracket() {
                 className="border border-gray-600 rounded-lg p-4 mb-4"
               >
                 <Text className="text-white text-2xl mb-2 text-[#3fff0f] font-ShareTech">
-                  {match.player1?.name ?? "Bye"} vs {match.player2?.name ?? "Bye"}
+                  {match.player1?.name ?? "Bye"} vs{" "}
+                  {match.player2?.name ?? "Bye"}
                 </Text>
 
                 {match.winner ? (
@@ -208,11 +231,32 @@ export default function Bracket() {
                               <Pressable
                                 key={pt}
                                 onPress={() =>
-                                  handleAddScore(matchIndex, idx === 0 ? 1 : 2, pt)
+                                  handleAddScore(
+                                    matchIndex,
+                                    idx === 0 ? 1 : 2,
+                                    pt
+                                  )
                                 }
                                 className="bg-gray-700 w-[100px] items-center px-3 py-1 rounded-full"
                               >
                                 <Text className="text-white">+{pt}</Text>
+                              </Pressable>
+                            ))}
+                          </View>
+                          <View className="flex-row space-x-2 justify-evenly mt-1">
+                            {[1, 2, 3].map((pt) => (
+                              <Pressable
+                                key={`sub-${pt}`}
+                                onPress={() =>
+                                  handleSubtractScore(
+                                    matchIndex,
+                                    idx === 0 ? 1 : 2,
+                                    pt
+                                  )
+                                }
+                                className="bg-red-700 w-[100px] items-center px-3 py-1 rounded-full"
+                              >
+                                <Text className="text-white">-{pt}</Text>
                               </Pressable>
                             ))}
                           </View>
