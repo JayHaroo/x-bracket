@@ -237,7 +237,7 @@ export default function Bracket() {
                                     pt
                                   )
                                 }
-                                className="bg-gray-700 w-[100px] items-center px-3 py-1 rounded-full"
+                                className="bg-gray-700 w-[100px] h-[40px] justify-center items-center px-3 py-1 rounded-full mb-4"
                               >
                                 <Text className="text-white">+{pt}</Text>
                               </Pressable>
