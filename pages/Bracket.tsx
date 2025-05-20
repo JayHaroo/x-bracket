@@ -208,7 +208,7 @@ export default function Bracket() {
             {round.map((match, matchIndex) => (
               <View
                 key={matchIndex}
-                className="border border-gray-600 rounded-lg p-4 mb-4"
+                className="border-2 border-white rounded-lg p-4 mb-4"
               >
                 <Text className="text-white text-2xl mb-2 text-[#3fff0f] font-ShareTech">
                   {match.player1?.name ?? "Bye"} vs{" "}
@@ -239,9 +239,9 @@ export default function Bracket() {
                                     pt
                                   )
                                 }
-                                className="bg-gray-700 w-[100px] h-[40px] justify-center items-center px-3 py-1 rounded-full mb-4"
+                                className="border-2 border-[#3fff0f] w-[100px] h-[40px] justify-center items-center px-3 py-1 rounded-full mb-4"
                               >
-                                <Text className="text-white">+{pt}</Text>
+                                <Text className="text-white text-[20px]">+{pt}</Text>
                               </Pressable>
                             ))}
                           </View>
@@ -256,9 +256,9 @@ export default function Bracket() {
                                     pt
                                   )
                                 }
-                                className="bg-red-700 w-[100px] items-center px-3 py-1 rounded-full"
+                                className="border-2 border-[#fa2c2c] w-[100px] items-center px-3 py-1 rounded-full"
                               >
-                                <Text className="text-white">-{pt}</Text>
+                                <Text className="text-white text-[20px]">-{pt}</Text>
                               </Pressable>
                             ))}
                           </View>
