@@ -1,4 +1,4 @@
-import { View, Text, Pressable, ScrollView, Alert } from "react-native";
+import { View, Text, Pressable, ScrollView, Alert, TextInput } from "react-native";
 import { useEffect, useState } from "react";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -31,6 +31,9 @@ export default function Bracket() {
   const [rounds, setRounds] = useState<Match[][]>([]);
   const [matchPoint, setMatchPoint] = useState<number | null>(null);
   const [playerCount, setPlayerCount] = useState(players.length);
+
+  const [renamingPlayer, setRenamingPlayer] = useState<string | null>(null);
+  const [newName, setNewName] = useState("");
 
   useEffect(() => {
     if (matchPoint !== null) {
@@ -208,7 +211,7 @@ export default function Bracket() {
     setRounds(updatedRounds);
     setPlayerCount((prev) => prev - 1);
   };
-  
+
   const handleRenamePlayer = (playerName: string) => {
     Alert.prompt(
       "Rename Player",
@@ -295,9 +298,71 @@ export default function Bracket() {
                       return (
                         <View key={idx} className="mb-3">
                           <View className="flex-row justify-between items-center mb-5">
-                            <Text className="text-white">
-                              {player.name} - Score: {player.score}
-                            </Text>
+                            {renamingPlayer === player.name ? (
+                              <View className="flex-row items-center space-x-2">
+                                <TextInput
+                                  className="bg-white px-2 py-1 rounded w-32"
+                                  value={newName}
+                                  onChangeText={setNewName}
+                                  placeholder="New name"
+                                />
+                                <Pressable
+                                  onPress={() => {
+                                    const updatedRounds = [...rounds];
+                                    const firstRound = updatedRounds[0].map(
+                                      (match) => {
+                                        const updatedMatch = { ...match };
+                                        if (
+                                          updatedMatch.player1?.name ===
+                                          player.name
+                                        ) {
+                                          updatedMatch.player1 = {
+                                            ...updatedMatch.player1,
+                                            name: newName,
+                                          };
+                                        }
+                                        if (
+                                          updatedMatch.player2?.name ===
+                                          player.name
+                                        ) {
+                                          updatedMatch.player2 = {
+                                            ...updatedMatch.player2,
+                                            name: newName,
+                                          };
+                                        }
+                                        return updatedMatch;
+                                      }
+                                    );
+
+                                    updatedRounds[0] = firstRound;
+                                    setRounds(updatedRounds);
+                                    setRenamingPlayer(null);
+                                    setNewName("");
+                                  }}
+                                  className="bg-green-500 px-2 py-1 rounded"
+                                >
+                                  <Text className="text-white text-xs">
+                                    Save
+                                  </Text>
+                                </Pressable>
+                                <Pressable
+                                  onPress={() => {
+                                    setRenamingPlayer(null);
+                                    setNewName("");
+                                  }}
+                                  className="bg-gray-500 px-2 py-1 rounded"
+                                >
+                                  <Text className="text-white text-xs">
+                                    Cancel
+                                  </Text>
+                                </Pressable>
+                              </View>
+                            ) : (
+                              <Text className="text-white">
+                                {player.name} - Score: {player.score}
+                              </Text>
+                            )}
+
                             {roundIndex === 0 && (
                               <View className="flex-row space-x-2">
                                 <Pressable
@@ -323,9 +388,10 @@ export default function Bracket() {
                                   </Text>
                                 </Pressable>
                                 <Pressable
-                                  onPress={() =>
-                                    handleRenamePlayer(player.name)
-                                  }
+                                  onPress={() => {
+                                    setRenamingPlayer(player.name);
+                                    setNewName(player.name);
+                                  }}
                                   className="bg-yellow-500 px-3 py-2 rounded-full"
                                 >
                                   <Text className="text-black text-xs">
