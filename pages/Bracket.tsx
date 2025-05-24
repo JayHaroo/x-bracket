@@ -392,7 +392,7 @@ export default function Bracket() {
                                     setRenamingPlayer(player.name);
                                     setNewName(player.name);
                                   }}
-                                  className="bg-yellow-500 px-3 py-2 rounded-full"
+                                  className="bg-yellow-500 px-3 py-2 rounded-full ml-2"
                                 >
                                   <Text className="text-black text-xs">
                                     Rename
