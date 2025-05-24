@@ -208,6 +208,7 @@ export default function Bracket() {
     setRounds(updatedRounds);
     setPlayerCount((prev) => prev - 1);
   };
+  
   const handleRenamePlayer = (playerName: string) => {
     Alert.prompt(
       "Rename Player",
@@ -298,28 +299,40 @@ export default function Bracket() {
                               {player.name} - Score: {player.score}
                             </Text>
                             {roundIndex === 0 && (
-                              <Pressable
-                                onPress={() =>
-                                  Alert.alert(
-                                    "Remove Player",
-                                    `Are you sure you want to remove ${player.name}?`,
-                                    [
-                                      { text: "Cancel", style: "cancel" },
-                                      {
-                                        text: "Remove",
-                                        style: "destructive",
-                                        onPress: () =>
-                                          handleRemovePlayer(player.name),
-                                      },
-                                    ]
-                                  )
-                                }
-                                className="bg-red-600 px-3 py-2 rounded-full ml-2"
-                              >
-                                <Text className="text-white text-xs">
-                                  Remove
-                                </Text>
-                              </Pressable>
+                              <View className="flex-row space-x-2">
+                                <Pressable
+                                  onPress={() =>
+                                    Alert.alert(
+                                      "Remove Player",
+                                      `Are you sure you want to remove ${player.name}?`,
+                                      [
+                                        { text: "Cancel", style: "cancel" },
+                                        {
+                                          text: "Remove",
+                                          style: "destructive",
+                                          onPress: () =>
+                                            handleRemovePlayer(player.name),
+                                        },
+                                      ]
+                                    )
+                                  }
+                                  className="bg-red-600 px-3 py-2 rounded-full"
+                                >
+                                  <Text className="text-white text-xs">
+                                    Remove
+                                  </Text>
+                                </Pressable>
+                                <Pressable
+                                  onPress={() =>
+                                    handleRenamePlayer(player.name)
+                                  }
+                                  className="bg-yellow-500 px-3 py-2 rounded-full"
+                                >
+                                  <Text className="text-black text-xs">
+                                    Rename
+                                  </Text>
+                                </Pressable>
+                              </View>
                             )}
                           </View>
 
