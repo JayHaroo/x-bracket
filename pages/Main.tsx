@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import word1 from "../assets/data/word1.json";
 import word2 from "../assets/data/word2.json";
+import names from "../assets/data/names.json";
 import { RootStackParamList } from "../App";
 
 interface Player {
@@ -19,12 +20,15 @@ interface Player {
   score: number;
 }
 
-type MainScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Main'>;
+type MainScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Main"
+>;
 
 export default function Main() {
   const navigation = useNavigation<MainScreenNavigationProp>();
   const [players, setPlayers] = useState<Player[]>([]);
-  const [newPlayerName, setNewPlayerName] = useState("");
+  const [newPlayerName, setNewPlayerName] = useState<string>(""); 
   const [tournamentName, setTournamentName] = useState("");
   const [tournamentType, setTournamentType] = useState("single-elimination");
   const [word1Data, setWord1Data] = useState<string[]>([]);
@@ -75,7 +79,12 @@ export default function Main() {
   };
 
   const addPlayer = () => {
-    const name = newPlayerName.trim() || "Default Player";
+    const trimmedName = typeof newPlayerName === "string" ? newPlayerName.trim() : "";
+    const name =
+      trimmedName.length > 0
+        ? trimmedName
+        : names[Math.floor(Math.random() * names.length)];
+
     setPlayers((prevPlayers) => [...prevPlayers, { name, score: 0 }]);
     setNewPlayerName(""); // Clear input after adding
   };
