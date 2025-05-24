@@ -208,6 +208,51 @@ export default function Bracket() {
     setRounds(updatedRounds);
     setPlayerCount((prev) => prev - 1);
   };
+  const handleRenamePlayer = (playerName: string) => {
+    Alert.prompt(
+      "Rename Player",
+      `Enter a new name for ${playerName}:`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: (newName) => {
+            if (!newName) return;
+
+            const updatedRounds = [...rounds];
+            const currentRound = [...updatedRounds[0]];
+
+            const newRound = currentRound.map((match) => {
+              const updatedMatch = { ...match };
+
+              if (updatedMatch.player1?.name === playerName) {
+                updatedMatch.player1 = {
+                  ...updatedMatch.player1,
+                  name: newName,
+                };
+              }
+
+              if (updatedMatch.player2?.name === playerName) {
+                updatedMatch.player2 = {
+                  ...updatedMatch.player2,
+                  name: newName,
+                };
+              }
+
+              return updatedMatch;
+            });
+
+            updatedRounds[0] = newRound;
+            setRounds(updatedRounds);
+          },
+        },
+      ],
+      "plain-text"
+    );
+  };
 
   return (
     <View className="flex-1 bg-[#121212] p-4">
